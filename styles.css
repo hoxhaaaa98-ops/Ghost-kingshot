@@ -233,3 +233,125 @@ label{font-size:13px;font-weight:850;color:#294735;display:block}input:not([type
  .mp-training-finish{grid-template-columns:1fr}.mp-timer-card{padding:14px}
 }
 @media(max-width:410px){.th-hero{align-items:flex-start;flex-direction:column;padding:20px}.th-utc-clock{align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px}.th-utc-clock small,.th-utc-clock span{margin:0}.th-utc-clock strong{font-size:23px}.mp-timer-fields{gap:7px}.mp-timer-fields input{font-size:18px}}
+
+
+/* ALLIANCE COMMS STUDIO — bespoke one-page writing interface */
+.ms-studio{display:flex;flex-direction:column;gap:19px;margin:4px 0 35px;min-width:0}
+.ms-hero{position:relative;display:flex;justify-content:space-between;align-items:center;gap:20px;overflow:hidden;min-height:166px;padding:27px 30px;border-radius:24px;background:radial-gradient(circle at 86% 9%,#5ed98b63,transparent 35%),linear-gradient(112deg,#071b17 0%,#0d4232 49%,#176747 100%);border:2px solid #2a8b58;box-shadow:0 5px 0 #135334,0 14px 26px #072d1f2c;color:#f7fff8}
+.ms-hero:before{position:absolute;inset:0;content:"";opacity:.13;pointer-events:none;background-image:radial-gradient(circle,#baffcb 1px,transparent 1px);background-size:28px 28px}
+.ms-hero-copy{z-index:1;position:relative;max-width:690px}
+.ms-kicker{display:block;color:#b0f6c2;font-weight:950;font-size:10px;letter-spacing:1.65px;line-height:1.55}
+.ms-hero h2{color:white;font-family:var(--font-family-display,system-ui);font-size:clamp(34px,4.5vw,51px);font-weight:1000;letter-spacing:-1.5px;margin:9px 0 8px;line-height:1.03}
+.ms-hero-spark{color:#acfac5;font-size:.75em}
+.ms-hero p{color:#c5ead3;margin:0;font-size:13px;line-height:1.65;max-width:550px}
+.ms-hero-stamp{z-index:1;flex:0 0 134px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;color:#b4f4c8;text-align:center;transform:rotate(7deg)}
+.ms-hero-stamp span{font-size:70px;line-height:1}
+.ms-hero-stamp strong{font-size:9px;letter-spacing:2px;line-height:1.4}
+.ms-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ms-metric{background:#0b3425;color:#e8ffed;border:1px solid #318752;border-radius:15px;padding:15px 16px;min-width:0;box-shadow:0 3px 0 #104c32}
+.ms-metric>span:first-child{color:#b2dfbe;font-size:10px;letter-spacing:1px;display:block;font-weight:950;margin-bottom:9px}
+.ms-metric strong{display:block;font-weight:950;font-size:clamp(21px,3vw,30px);font-variant-numeric:tabular-nums;line-height:1.1;overflow-wrap:anywhere}
+.ms-metric strong small{color:#b9d7c3;font-size:.48em}
+.ms-metric .ms-state{font-size:clamp(14px,2vw,19px);line-height:1.35;color:#a0f5bb}
+.ms-metric .ms-over{color:#ffd59f}
+.ms-metric .ms-status-sub{color:#a6d4b3;display:block;margin-top:8px;font-size:10px}
+.ms-progress{display:block;height:5px;border-radius:12px;background:#416e50;overflow:hidden;margin-top:11px}
+.ms-progress>span{height:100%;display:block;border-radius:12px;background:linear-gradient(90deg,#65d783,#b3fdba);transition:width .1s}
+.ms-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(285px,.85fr);gap:20px;align-items:start;min-width:0}
+.ms-compose{border-color:#9bcdaa;padding:23px 23px 25px;box-shadow:0 6px 21px #194b2b18}
+.ms-section-head{display:flex;justify-content:space-between;align-items:start;gap:15px;margin-bottom:20px}
+.ms-overline{display:block;color:#2c8951;font-size:10px;letter-spacing:1.25px;font-weight:1000}
+.ms-section-head h2{font-size:clamp(23px,3vw,28px);color:#133c27;margin:5px 0 5px;font-weight:950;letter-spacing:-.6px}
+.ms-section-head p{font-size:12px;color:#66816d;margin:0}
+.ms-section-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:13px;background:#e4f8e9;color:#277d45;font-size:28px}
+.ms-template-bar{padding:13px 14px;background:#eaf8ed;border:1px solid #c3e2cc;border-radius:13px;margin-bottom:16px}
+.ms-template-bar>span{display:block;font-size:10px;color:#32774c;font-weight:950;letter-spacing:1.1px;margin-bottom:9px}
+.ms-template-chips{display:flex;flex-wrap:wrap;gap:7px}
+.ms-template-chip{border:1px solid #9fcdb0;background:white;color:#185234;border-radius:30px;padding:8px 11px;font-weight:850;font-size:11px;cursor:pointer;transition:background .14s}
+.ms-template-chip:hover{background:#c1f3cf;border-color:#46a66c}
+.ms-template-label,.ms-editor-label{display:flex;flex-direction:column;gap:8px;font-weight:900;font-size:12px;color:#235034}
+.ms-template-label select{width:100%;background:#f7fff8;color:#1f5032;border:1px solid #b1d4bb;border-radius:10px;padding:10px;font-weight:650}
+.ms-editor-label{margin-top:18px;letter-spacing:.5px}
+.ms-editor-label textarea{display:block;min-height:290px;width:100%;resize:vertical;line-height:1.65;font-size:14px;font-weight:500;letter-spacing:0;border:2px solid #9bcda9;border-radius:15px;padding:16px;background:linear-gradient(#fcfffd,#f4fcf5);box-shadow:inset 0 2px 9px #0d3c1b0d;color:#0d3620}
+.ms-editor-label textarea:focus{outline:3px solid #8af0a17d;border-color:#2f9957}
+.ms-editor-footer{display:flex;flex-direction:column;gap:5px;margin-top:11px}
+.ms-limit-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;color:#246b3c}
+.ms-limit-row>span{font-size:11px;font-weight:850;padding:5px 9px;border-radius:7px;background:#e4f6e9}
+.ms-limit-row .bad{color:#a8421d;background:#fff1e6}
+.ms-editor-footer p{font-size:11px;color:#698471;margin:3px 0 0}
+.ms-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.ms-actions .button{font-size:12px;padding:12px 14px}
+.ms-copy-main{flex:1;min-width:138px}
+.ms-aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ms-preview-card{overflow:hidden;background:#09291f;border:2px solid #2b8254;border-radius:19px;box-shadow:0 6px 0 #123c2a,0 14px 23px #0029151d;color:#e9fff0}
+.ms-preview-head{display:flex;align-items:center;gap:9px;border-bottom:1px solid #31794e;padding:15px 17px;background:#0f3b29;color:#b3edc7;font-size:10px;letter-spacing:1.2px;font-weight:950}
+.ms-preview-head strong{margin-left:auto;font-size:15px;color:#7dcd96}
+.ms-live-dot{height:8px;width:8px;border-radius:50%;background:#72f598;box-shadow:0 0 0 3px #41aa5f47,0 0 14px #55ff7a}
+.ms-preview-body{padding:17px}
+.ms-preview-identity{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+.ms-preview-avatar{background:#207747;color:#c2f7cb;height:42px;width:42px;flex:none;border-radius:12px;display:grid;place-items:center;font-size:24px}
+.ms-preview-identity strong{display:block;font-size:13px;color:white}
+.ms-preview-identity small{color:#9ecbad;font-size:11px}
+.ms-preview-paper{background:#f5fff5;border:2px solid #afdac1;border-radius:14px;padding:16px 14px;min-height:176px}
+.ms-preview-paper pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;color:#153923;font:600 12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;max-height:370px;overflow:auto}
+.ms-preview-summary{display:flex;justify-content:space-between;gap:10px;margin-top:12px;color:#adcfb6;font-size:10px;font-weight:800}
+.ms-preview-footer{padding:13px 17px;background:#103f2b;border-top:1px solid #317550;color:#b6d8c1;font-size:11px;line-height:1.5}
+.ms-aside-tip{display:flex;align-items:start;gap:12px;border-radius:13px;border:1px solid #c3e4cd;background:#e9f9ed;color:#246444;padding:14px;font-size:11px;line-height:1.65}
+.ms-aside-tip>span{flex:none;font-size:22px;color:#1f844c}
+.ms-aside-tip p{margin:0}
+.ms-vault{border:2px solid #347c54;border-radius:19px;overflow:hidden;box-shadow:0 5px 0 #14472d;background:#08291c}
+.ms-vault>summary{display:flex;align-items:center;gap:13px;list-style:none;padding:18px 21px;background:linear-gradient(105deg,#082c1d,#145539);color:#edfff2;cursor:pointer}
+.ms-vault>summary::-webkit-details-marker{display:none}
+.ms-vault-symbol{display:grid;place-items:center;font-size:26px;background:#276e46;border:1px solid #65ae7b;border-radius:12px;flex:none;width:43px;height:43px;color:#c0ffd1}
+.ms-vault>summary strong{display:block;font-weight:950;font-size:17px}
+.ms-vault>summary small{display:block;color:#b1dec0;font-size:11px;margin-top:4px}
+.ms-vault-chevron{margin-left:auto;font-size:22px;color:#a4e8b9;transform:rotate(0);transition:transform .16s}
+.ms-vault[open] .ms-vault-chevron{transform:rotate(180deg)}
+.ms-vault-content{padding:0 12px 15px}
+.ms-vault-content .secret-emojis{border:none;border-radius:0 0 12px 12px;box-shadow:none;padding:14px 14px 17px}
+.ms-vault-content .emoji-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:380px}
+.ms-vault-content .emoji-heading h2{font-size:18px}
+.ms-vault-content .emoji-heading p{max-width:660px}
+.ms-bottom-note{font-size:11px;color:#557e64;text-align:center;line-height:1.5;padding:2px 10px}
+@media(max-width:1100px){
+ .ms-grid{grid-template-columns:minmax(0,1.2fr) minmax(240px,.85fr);gap:13px}
+ .ms-compose{padding:20px}
+ .ms-vault-content .emoji-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+ .ms-grid{grid-template-columns:1fr}
+ .ms-aside{display:grid;grid-template-columns:1fr}
+ .ms-preview-paper{min-height:100px}
+}
+@media(max-width:650px){
+ .ms-studio{gap:13px}
+ .ms-hero{padding:19px;min-height:140px;align-items:flex-start}
+ .ms-hero h2{font-size:35px}
+ .ms-hero p{font-size:11px}
+ .ms-kicker{font-size:9px}
+ .ms-hero-stamp{flex-basis:60px;transform:none}
+ .ms-hero-stamp span{font-size:42px}.ms-hero-stamp strong{font-size:6px;letter-spacing:.6px}
+ .ms-dashboard{gap:6px}
+ .ms-metric{padding:10px 8px;min-height:90px}
+ .ms-metric>span:first-child{font-size:9px;letter-spacing:.2px}
+ .ms-metric strong{font-size:19px}
+ .ms-metric .ms-state{font-size:12px}
+ .ms-metric .ms-status-sub{font-size:9px}
+ .ms-compose{padding:16px}
+ .ms-editor-label textarea{min-height:240px;padding:13px}
+ .ms-actions{gap:7px}.ms-actions .button{flex:1;padding:11px 8px}
+ .ms-vault>summary{padding:14px}
+ .ms-vault>summary strong{font-size:14px}
+ .ms-vault>summary small{font-size:10px}
+ .ms-vault-content{padding:0 6px 9px}
+ .ms-vault-content .secret-emojis{padding:12px}
+ .ms-vault-content .emoji-grid{grid-template-columns:1fr;max-height:410px}
+ .ms-limit-row{justify-content:flex-start}
+}
+@media(max-width:380px){
+ .ms-hero-stamp{display:none}
+ .ms-hero h2{font-size:31px}
+ .ms-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ms-metric:last-child{grid-column:1/-1}
+ .ms-metric{min-height:77px}
+}
