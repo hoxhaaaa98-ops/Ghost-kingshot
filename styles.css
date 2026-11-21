@@ -157,3 +157,79 @@ label{font-size:13px;font-weight:850;color:#294735;display:block}input:not([type
  .mp-upcoming>div{flex-direction:column;align-items:flex-start;gap:3px}
  .mp-actions .button{flex:1}
 }
+
+/* UTC Time Hub — direct-access navigation, not a step-by-step wizard */
+.th-hub{display:flex;flex-direction:column;gap:18px;margin:4px 0 30px}
+.th-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:25px;min-height:169px;padding:28px 32px;background:radial-gradient(circle at 86% 9%,#9fe9a545,transparent 36%),linear-gradient(116deg,#061c17,#0e513b 58%,#298959);border:2px solid #116b44;border-radius:23px;box-shadow:0 7px 0 #144830,0 13px 28px #0a462126;color:#f6fff8}
+.th-hero:before{content:'';pointer-events:none;position:absolute;inset:0;opacity:.14;background:repeating-linear-gradient(105deg,transparent 0 22px,#b7fccc 23px,transparent 24px)}
+.th-hero-copy{position:relative;z-index:1}
+.th-eyebrow{display:block;color:#adf5c1;letter-spacing:2px;font-size:10px;font-weight:950;margin-bottom:6px}
+.th-hero h2{font-family:var(--font-family-display,system-ui);font-size:clamp(36px,5vw,53px);font-weight:1000;letter-spacing:-1.7px;line-height:1;margin:5px 0 10px;color:white}
+.th-hero p{color:#d1f5dc;font-size:13px;line-height:1.6;max-width:550px;margin:0}
+.th-utc-clock{flex:none;position:relative;z-index:1;background:#052319ad;border:1px solid #82cfa0;border-radius:17px;padding:17px 20px;text-align:center;min-width:166px;box-shadow:inset 0 1px 0 #b4edc734}
+.th-utc-clock small{display:block;font-size:9px;color:#b4e5c1;letter-spacing:1.1px;font-weight:950;margin-bottom:9px}
+.th-utc-clock strong{display:block;font:1000 38px/1.1 var(--font-family-display,system-ui);letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.th-utc-clock span{display:block;font-size:10px;color:#b5dccc;margin-top:7px}
+.th-switcher{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:4px 0 0}
+.th-switch{display:flex;align-items:center;gap:13px;min-width:0;min-height:91px;padding:14px 16px;text-align:left;background:#fbfffc;color:#244e33;border:2px solid #c2e1cb;border-radius:17px;cursor:pointer;box-shadow:0 4px 12px #13582e10;transition:transform .15s,background .15s}
+.th-switch:hover{transform:translateY(-2px);border-color:#71bd8b}
+.th-switch.is-selected{border-color:#248a50;background:linear-gradient(125deg,#d3f7dd,#ebfff0);box-shadow:0 4px 0 #2d9257,0 8px 16px #125c342a}
+.th-switch-icon{display:grid;place-items:center;flex:none;height:45px;width:45px;border-radius:13px;background:#e5f5e9;color:#206c43;border:1px solid #bedec9;font-size:26px}
+.th-switch.is-selected .th-switch-icon{background:#165634;color:#b6f2c3;border-color:#1d8954}
+.th-switch-copy{min-width:0}
+.th-switch strong{display:block;font-size:15px;line-height:1.18;font-weight:950;color:#153f29}
+.th-switch small{display:block;font-size:11px;line-height:1.45;color:#64816d;margin-top:5px}
+.th-content{min-height:320px;animation:th-enter .15s ease}
+@keyframes th-enter{from{opacity:.72;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.th-panel{padding:26px!important;border:2px solid #b4dfc1;box-shadow:0 8px 24px #0a3d261a}
+.th-panel-heading{display:flex;align-items:center;gap:15px;margin-bottom:23px}
+.th-panel-mark{display:grid;place-items:center;width:56px;height:56px;flex:none;font-size:33px;color:#ccfadb;background:#124d33;border-radius:14px}
+.th-panel-heading h2{font-size:25px;font-weight:950;color:#143c2a;margin:2px 0 5px}
+.th-panel-heading p{font-size:13px;color:#5a7764;margin:0;line-height:1.55}
+.th-panel .form-grid{max-width:740px}
+.th-panel #timeResults{margin-top:23px}
+.th-footer-note{color:#547a61;font-size:11px;line-height:1.5;margin:0 4px}
+.mp-purpose{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:0 0 23px}
+.mp-purpose-card{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:18px 17px;border:2px solid #c8e4cf;border-radius:16px;background:#f5faf5;color:#20492d;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s}
+.mp-purpose-card:hover{transform:translateY(-2px);border-color:#85c99d}
+.mp-purpose-card.is-active{background:linear-gradient(135deg,#0b4329,#1e7845);border-color:#40b66b;color:#fff;box-shadow:0 4px 0 #0f572e}
+.mp-purpose-icon{display:grid;place-items:center;height:38px;width:38px;border-radius:10px;background:#d8f0dd;font-size:23px;color:#0d6738}
+.mp-purpose-card.is-active .mp-purpose-icon{background:#94e5af;color:#0c3621}
+.mp-purpose-card strong{font-size:16px;font-weight:950}
+.mp-purpose-card small{font-size:11px;line-height:1.5;color:#6a7d6f}
+.mp-purpose-card.is-active small{color:#d1f6d7}
+.mp-field-context{display:flex;flex-direction:column;justify-content:center;gap:5px;border:1px solid #c4e2cd;border-radius:11px;background:#eef8f0;padding:12px 14px;color:#285b3c;font-size:12px;line-height:1.4}
+.mp-field-context strong{font-size:12px}
+.mp-timer-card{background:linear-gradient(145deg,#e4f7e9,#f4fff5);border:2px solid #8acda0;border-radius:18px;padding:20px;margin:22px 0 18px}
+.mp-timer-heading{display:flex;align-items:center;gap:13px;margin-bottom:17px}
+.mp-timer-heading>span{display:grid;place-items:center;width:43px;height:43px;background:#145335;color:#c7f8d3;font-size:26px;border-radius:11px;flex:none}
+.mp-timer-heading strong{display:block;font-size:16px;color:#18462d;font-weight:950}
+.mp-timer-heading p{margin:5px 0 0;color:#587663;font-size:12px;line-height:1.5}
+.mp-timer-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mp-timer-fields label{display:flex;flex-direction:column;gap:7px;color:#2c5a39;font-size:12px;font-weight:900}
+.mp-timer-fields input{width:100%;min-width:0;border:1px solid #91cda4;background:#fff;border-radius:10px;min-height:51px;padding:11px;font:900 21px/1 var(--font-family-display,system-ui);font-variant-numeric:tabular-nums;text-align:center;color:#12472c}
+.mp-buffer-label{display:flex;flex-direction:column;gap:8px;max-width:385px;margin-top:18px;font-size:12px;font-weight:900;color:#27553b}
+.mp-buffer-label select{min-height:44px;border:1px solid #9dceb0;background:#fff;color:#194631;border-radius:10px;padding:10px;font-size:13px}
+.mp-timer-note{margin:15px 0 0!important;font-size:11px!important;color:#527b60;line-height:1.6!important}
+.mp-training-finish{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:17px 16px 4px;background:#e7f7ec}
+.mp-training-finish>div{border:1px dashed #8dc99e;background:#f9fffa;padding:13px;border-radius:12px;min-width:0}
+.mp-training-finish small{display:block;font-size:11px;color:#517e5f;font-weight:850;margin-bottom:7px}
+.mp-training-finish strong{font-size:14px;color:#10472c;overflow-wrap:anywhere;line-height:1.4}
+@media(max-width:940px){
+ .th-switcher{gap:8px}.th-switch{padding:11px;min-height:85px;gap:8px}.th-switch-icon{width:36px;height:36px;font-size:21px}.th-switch strong{font-size:13px}.th-switch small{font-size:10px}
+}
+@media(max-width:760px){
+ .th-hero{padding:23px;min-height:160px;gap:12px}
+ .th-hero h2{font-size:38px}.th-hero p{font-size:11px}
+ .th-utc-clock{min-width:116px;padding:13px 9px}.th-utc-clock strong{font-size:27px}.th-utc-clock small{font-size:8px}
+ .th-switcher{grid-template-columns:1fr;gap:9px}
+ .th-switch{min-height:70px;padding:10px 13px}
+ .th-switch-icon{width:38px;height:38px}
+ .th-switch strong{font-size:14px}.th-switch small{font-size:11px}
+ .th-panel{padding:18px!important}.th-panel-heading{gap:11px}.th-panel-heading h2{font-size:21px}
+ .mp-purpose{grid-template-columns:1fr}
+ .mp-purpose-card{padding:13px;display:grid;grid-template-columns:38px 1fr;column-gap:10px}
+ .mp-purpose-icon{grid-row:1/3}.mp-purpose-card small{margin:0}
+ .mp-training-finish{grid-template-columns:1fr}.mp-timer-card{padding:14px}
+}
+@media(max-width:410px){.th-hero{align-items:flex-start;flex-direction:column;padding:20px}.th-utc-clock{align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px}.th-utc-clock small,.th-utc-clock span{margin:0}.th-utc-clock strong{font-size:23px}.mp-timer-fields{gap:7px}.mp-timer-fields input{font-size:18px}}
