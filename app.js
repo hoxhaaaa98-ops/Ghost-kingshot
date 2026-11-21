@@ -232,6 +232,7 @@
     const draft=getMessageText();
     const characters=draft.length,lines=draft?draft.split(/\r?\n/).length:0;
     const quickTemplates=[['event','Event reminder'],['notice','Announcement'],['rules','Rules reminder'],['battle','Battle plan']];
+    const quickEmojis=[0xE001,0xE010,0xE014,0xE019,0xE013,0xE009].map(code=>EMOJI_SET.find(item=>item[0]===code)).filter(Boolean);
     return header('Message Creator','Draft, format and copy Kingshot alliance announcements without leaving the editor.')+
       '<div class="ms-studio">'+
       '<div class="ms-hero"><div class="ms-hero-copy"><span class="ms-kicker">GHOST’S KINGSHOT TOOLS / ALLIANCE COMMS</span><h2>Comms Studio<span class="ms-hero-spark"> ✦</span></h2><p>Draft announcements, drop in secret Kingshot icons and prepare your message for sending — all in one workspace.</p></div>'+
@@ -246,6 +247,8 @@
           '<div class="ms-section-head"><div><span class="ms-overline">01 / WRITING SPACE</span><h2>Compose a message</h2><p>Type freely, or start from a ready-made format.</p></div><span class="ms-section-mark">✎</span></div>'+
           '<div class="ms-template-bar"><span>QUICK START</span><div class="ms-template-chips">'+quickTemplates.map(([value,label])=>'<button type="button" class="ms-template-chip" data-action="message-quick-template" data-template="'+value+'">'+label+'</button>').join('')+'</div></div>'+
           '<label class="ms-template-label">Or select a template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
+          '<div class="ms-emoji-shortcuts" role="group" aria-label="Quick Kingshot emoji insertion"><div class="ms-emoji-shortcuts-title"><span>✧ SECRET KINGSHOT EMOJIS</span><small>Tap an icon to insert it into your message</small></div><div class="ms-emoji-shortcuts-row">'+quickEmojis.map(([code,name,cat,picture])=>'<button type="button" class="ms-emoji-quick" data-action="emoji-insert" data-code="'+code+'" title="Insert '+esc(name)+'"><span aria-hidden="true">'+picture+'</span><small>'+esc(name)+'</small></button>').join('')+'</div></div>'+
+          '<details class="ms-vault ms-vault-inline" id="msEmojiVault"><summary><span class="ms-vault-symbol">✧</span><span><strong>Browse all '+EMOJI_SET.length+' Kingshot emojis</strong><small>Search items, speedups, resources and more · Tap to expand</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary><div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
           '<label class="ms-editor-label">MESSAGE CONTENT<textarea id="messageBody" maxlength="15000" spellcheck="true" placeholder="Write your alliance message here...">'+esc(draft)+'</textarea></label>'+
           '<div class="ms-editor-footer"><div class="ms-limit-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div><p>Short-message limits may vary in Kingshot. The editor won’t erase anything if you go over.</p></div>'+
           '<div class="ms-actions"><button type="button" class="button button-primary ms-copy-main" data-action="copy-message">▣ Copy message</button><button type="button" class="button button-dark" data-action="save-draft">Save draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div>'+
@@ -258,8 +261,6 @@
           '<div class="ms-preview-footer">Nothing is posted to Kingshot automatically. Use Copy message to paste it into the game.</div>'+
         '</section><div class="ms-aside-tip"><span>✦</span><p><strong>Instant updates.</strong> Edit your message or insert a secret icon below — the preview updates immediately.</p></div></aside>'+
       '</div>'+
-      '<details class="ms-vault" open><summary><span class="ms-vault-symbol">✧</span><span><strong>Secret Kingshot Emoji Vault</strong><small>Find Unicode item icons and insert them directly into your draft</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary>'+
-      '<div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
       '<div class="ms-bottom-note"><strong>Saved on your device.</strong> Click Save draft to store your message under the selected player profile. Copying never sends it automatically.</div>'+
       '</div>';
   }
