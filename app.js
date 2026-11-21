@@ -176,7 +176,7 @@
       '<section class="content-card ks-utc-card"><span class="eyebrow">EVENT TIME PLANNER</span><h2>Convert UTC event times</h2><p>All regions adjust for their local daylight-saving dates.</p><div class="form-grid"><label>UTC date<input type="date" id="utcDate" required value="'+esc(utcSelection.date)+'"></label><label>UTC time<input type="time" id="utcTime" required value="'+esc(utcSelection.time)+'"></label></div><div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>':
       appointmentsPanel();
     const times=otherToolSteps.utc===0?['8 regions','Live conversion','DST aware']:['Schedule','Saved on device','UTC times'];
-    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 2</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong>'+appointments().length+' saved</strong></div>';
+    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 2</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong id="flowAppointments">'+appointments().length+' saved</strong></div>';
     return header('UTC Time Converter','Convert alliance times and keep appointment notes in the same easy step-by-step view.')+
       flowWorkspace('utc','Event Time Planner','UTC TIME CONVERTER / EVENT PLANNING','Convert event times, then organise your kingdom appointment schedule.','◷',steps,stage,summary);
   }
@@ -212,9 +212,9 @@
     if(rows.length>=150){toast('This profile already has 150 appointments.');return;}
     rows.push({id:'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,role,when,duration,notes:$('aptNotes').value.trim()});
     next[id]=rows;localStorage.setItem(APT_KEY,JSON.stringify(next));
-    form.reset();$('appointmentList').innerHTML=appointmentList();toast('Appointment note saved.');
+    form.reset();$('appointmentList').innerHTML=appointmentList();if($('flowAppointments'))$('flowAppointments').textContent=appointments().length+' saved';toast('Appointment note saved.');
   }
-  function removeAppointment(id){const next=allAppointments(),pid=profile().id;next[pid]=(next[pid]||[]).filter(a=>a.id!==id);localStorage.setItem(APT_KEY,JSON.stringify(next));$('appointmentList').innerHTML=appointmentList();toast('Appointment removed.');}
+  function removeAppointment(id){const next=allAppointments(),pid=profile().id;next[pid]=(next[pid]||[]).filter(a=>a.id!==id);localStorage.setItem(APT_KEY,JSON.stringify(next));$('appointmentList').innerHTML=appointmentList();if($('flowAppointments'))$('flowAppointments').textContent=appointments().length+' saved';toast('Appointment removed.');}
   async function copyAppointments(){
     const rows=appointments().slice().sort((a,b)=>a.when.localeCompare(b.when));
     if(!rows.length){toast('Add an appointment first.');return;}
@@ -362,7 +362,7 @@
     if(action==='edit-profile')openProfile();
     else if(action==='new-profile'){showDropdown(false);openProfile(true);}
     else if(action==='save-profile'){if(!hasProfile())openProfile(true);else {save();toast('Your profile is saved on this device.');}}
-    else if(action==='switch-profile'&&state.profiles.some(p=>p.id===btn.dataset.id)){state.currentId=btn.dataset.id;messageBuffer=null;save();showDropdown(false);render();toast('Profile switched.');}
+    else if(action==='switch-profile'&&state.profiles.some(p=>p.id===btn.dataset.id)){state.currentId=btn.dataset.id;messageBuffer=null;otherToolSteps.message=0;save();showDropdown(false);render();toast('Profile switched.');}
     else if(action==='delete-profile')deleteProfile();
     else if(action==='toggle-favorite')toggleFav(btn.dataset.id);
     else if(action==='delete-appointment')removeAppointment(btn.dataset.id);
