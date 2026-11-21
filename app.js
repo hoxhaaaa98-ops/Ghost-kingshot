@@ -85,16 +85,41 @@
       <div class="tool-grid">${TOOLS.map(toolCard).join('')}</div>`;
   }
   function header(title,desc){return `<div class="page-intro"><a href="#dashboard" data-link class="back-link">← Dashboard / Tools</a><h1>${esc(title)}</h1><p>${esc(desc)}</p></div>`;}
+  // Shared step navigation for the working Kingshot tools.
+  const otherToolSteps={utc:0,message:0};
+  let utcSelection={date:'',time:''};
+  let messageBuffer=null;
+  let previouslyRendered='';
+  function flowWorkspace(tool,heading,kicker,intro,seal,steps,body,summary){
+    const current=otherToolSteps[tool];
+    const step=steps[current]||steps[0];
+    return '<div class="vk-root vk-workspace ks-tool-flow ks-flow-'+steps.length+'">'+
+    '<div class="vk-command-header"><div class="vk-command-text"><span class="vk-eyebrow">'+esc(kicker)+'</span><h2>'+esc(heading)+'</h2><p>'+esc(intro)+'</p></div><span class="vk-command-seal" aria-hidden="true">'+seal+'</span></div>'+
+    '<div class="vk-command-metrics">'+summary+'</div>'+
+    '<div class="vk-stepper" aria-label="'+esc(heading)+' steps">'+steps.map((item,i)=>'<button type="button" class="vk-step '+(i===current?'vk-step-active ':i<current?'vk-step-past ':'')+'" data-action="flow-step" data-tool="'+tool+'" data-index="'+i+'" '+(i===current?'aria-current="step"':'')+'><span class="vk-step-number">'+(i<current?'✓':String(i+1).padStart(2,'0'))+'</span><span class="vk-step-label">'+esc(item.title)+'</span></button>').join('')+'</div>'+
+    '<div class="vk-active-step-heading"><div><span>STEP '+String(current+1).padStart(2,'0')+' OF '+String(steps.length).padStart(2,'0')+'</span><h2>'+esc(step.title)+'</h2><p>'+esc(step.desc)+'</p></div><div class="vk-step-progress"><span style="width:'+Math.round((current+1)/steps.length*100)+'%"></span></div></div>'+
+    '<div class="vk-stage-body">'+body+'</div>'+
+    '<div class="vk-bottom-navigation"><div>'+(current>0?'<button type="button" class="vk-back-btn" data-action="flow-step" data-tool="'+tool+'" data-index="'+(current-1)+'">← Previous</button>':'<span class="vk-autosave">♛ '+esc(heading)+'</span>')+'</div>'+(current<steps.length-1?'<button type="button" class="vk-next-btn" data-action="flow-step" data-tool="'+tool+'" data-index="'+(current+1)+'">Continue →</button>':'<button type="button" class="vk-next-btn" data-action="flow-step" data-tool="'+tool+'" data-index="0">Back to start ↻</button>')+'</div>'+
+    '</div>';
+  }
+  function getMessageText(){if(messageBuffer===null)messageBuffer=profile().draft||'';return messageBuffer;}
+  function messageSummary(){
+    const value=getMessageText(),lines=value?value.split(/\r?\n/).length:0;
+    return '<div><span>Characters</span><strong id="flowChars">'+value.length+' / 512</strong></div>'+
+     '<div><span>Message lines</span><strong id="flowLines">'+lines+' / 10</strong></div>'+
+     '<div><span>Saved profile</span><strong id="flowProfile">'+esc(hasProfile()?profile().name:'Guest')+'</strong></div>';
+  }
+  function previewMessage(){
+    const v=getMessageText(),lines=v?v.split(/\r?\n/).length:0;
+    return '<section class="content-card ks-preview-panel"><span class="eyebrow">FINAL MESSAGE</span><h2>Review & copy</h2>'+
+      '<p>Check your announcement, then copy it straight into Kingshot.</p>'+
+      '<pre class="ks-message-preview" id="messagePreview">'+(v?esc(v):'No message written yet. Return to Compose to create one.')+'</pre>'+
+      '<div class="counter-row"><span class="'+(v.length>512?'bad':'good')+'">'+v.length+' / 512 characters</span><span class="'+(lines>10?'bad':'good')+'">'+lines+' / 10 lines</span></div>'+
+      '<div class="form-actions"><button type="button" class="button button-primary" data-action="copy-message">▣ Copy Message</button><button type="button" class="button button-dark" data-action="save-draft">Save Draft</button><button type="button" class="button button-ghost" data-action="flow-step" data-tool="message" data-index="0">✎ Edit message</button></div></section>';
+  }
   function gameTool(t){
-    const fav=profile().favorites.includes(t.id);
-    if(t.id==='viking')return `${header(t.name,t.intro)}<div class="tool-page-hero" style="height:205px;margin-bottom:23px"><img src="assets/viking.webp" alt="Viking Vengeance artwork"><div class="tool-hero-gradient"></div><div class="tool-hero-text"><span class="eyebrow">VIKING VENGEANCE</span><h2>Squad Planner</h2></div></div><div id="viking-planner-root" data-profile="${esc(profile().id)}"></div>`;
-    return `${header(t.name,t.intro)}<div class="wide-grid">
-      <div><div class="tool-page-hero"><img src="${ASSETS+t.img}" alt="${esc(t.name)} artwork"><div class="tool-hero-gradient"></div><div class="tool-hero-text"><span class="eyebrow">${esc(t.tag)}</span><h2>${esc(t.name)}</h2></div></div>
-      <section class="content-card" style="margin-top:20px"><h2>Calculator details</h2><p>This tool's interface is prepared. The calculation fields and formula will be added once you tell me exactly how it should work.</p>
-      <div class="coming-note"><span style="font-size:24px">⚙</span><span><strong>Awaiting your instructions</strong><br>No estimates or unverified Kingshot calculations are being shown.</span></div>
-      <div class="form-actions"><button class="button ${fav?'button-dark':'button-primary'}" type="button" data-action="toggle-favorite" data-id="${t.id}">${fav?'✓ Saved to profile':'☆ Save to my profile'}</button></div></section></div>
-      <section class="content-card"><span class="eyebrow">NEXT DEVELOPMENT STAGE</span><h2 style="margin-top:6px">How we'll build this</h2><ol class="number-steps"><li>Define the player inputs.</li><li>Agree the calculation rules and game values.</li><li>Build the calculator and test real examples.</li><li>Save favourite setups to your profile.</li></ol><p class="muted" style="font-size:12px">Nothing here uses guessed game data. Your tool specifications take priority.</p><div class="feature-list"><div class="feature-item"><span class="feature-icon">✎</span><div><strong>Custom inputs</strong><small>Designed to your preferences</small></div></div><div class="feature-item"><span class="feature-icon">◎</span><div><strong>Accurate outputs</strong><small>Verified using your examples</small></div></div><div class="feature-item"><span class="feature-icon">▣</span><div><strong>Saved setups</strong><small>Per-player profile storage</small></div></div></div></section>
-    </div>`;
+    if(t.id==='viking')return header(t.name,t.intro)+'<div class="tool-page-hero" style="height:205px;margin-bottom:23px"><img src="assets/viking.webp" alt="Viking Vengeance artwork"><div class="tool-hero-gradient"></div><div class="tool-hero-text"><span class="eyebrow">VIKING VENGEANCE</span><h2>Squad Planner</h2></div></div><div id="viking-planner-root" data-profile="'+esc(profile().id)+'"></div>';
+    return header(t.name,t.intro)+'<div class="vk-root ks-inprogress"><div class="vk-command-header"><div class="vk-command-text"><span class="vk-eyebrow">'+esc(t.tag)+'</span><h2>'+esc(t.name)+'</h2><p>We're preparing this calculator for Kingshot.</p></div><span class="vk-command-seal" aria-hidden="true">♜</span></div><section class="content-card ks-inprogress-card" role="status"><div class="ks-inprogress-icon" aria-hidden="true">⚙</div><h2>Tool in process</h2><p>We're building and checking this tool before opening it to players. No unverified results will be displayed.</p><a class="button button-primary" href="#dashboard" data-link>← Back to all tools</a></section></div>';
   }
   const VIKING_DEFAULT={base:'',marches:'6',infantry:'',cavalry:'',bison:'0',boost:'0',marshal:'0'};
   function allViking(){try{return JSON.parse(localStorage.getItem(CAP_KEY)||'{}')||{};}catch(e){return {};}}
@@ -142,10 +167,18 @@
   }
   function profilePage(){const p=profile();return `${header('Player Profile','Create, switch and save profiles for different Kingshot accounts.')}<div class="profile-full">${profilePanel(p)}</div><div class="wide-grid"><div class="content-card"><span class="eyebrow">YOUR KINGDOM ACCOUNTS</span><h2>Saved profiles</h2><div class="saved-list">${!hasProfile()?'<p>No profiles yet. Create yours to begin.</p>':''}${state.profiles.map(x=>`<button type="button" data-action="switch-profile" data-id="${esc(x.id)}">${x.id===state.currentId?'✓ ':''}♛ ${esc(x.name)} ${x.kingdom?' · #'+esc(x.kingdom):''}</button>`).join('')}</div><div class="form-actions"><button class="button button-primary" data-action="new-profile">＋ New Profile</button>${state.profiles.length>1?'<button class="button button-ghost" data-action="delete-profile">Delete Current Profile</button>':''}</div></div><div class="content-card"><h2>Saved on your device</h2><p>Your player details and message drafts stay in this browser. At this stage there is no account sign-in or cross-device sync.</p><div class="info-strip">You can export a backup under <a href="#settings" data-link style="font-weight:900;text-decoration:underline">Settings</a> to move your profiles to another device.</div></div></div>`;}
   function utcPage(){
-    return `${header('UTC Time Converter','Turn any UTC event time into the correct local time in other regions, including daylight-saving changes.')}
-      <div class="wide-grid"><section class="content-card"><span class="eyebrow">EVENT TIME PLANNER</span><h2>Convert from UTC</h2><div class="form-grid"><label>UTC date<input type="date" id="utcDate" required></label><label>UTC time<input type="time" id="utcTime" required></label></div>
-      <div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC time</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>
-      <section class="content-card"><span class="eyebrow">HOW IT WORKS</span><h2>Coordinate across time zones</h2><div class="tool-page-hero" style="height:180px;margin-bottom:17px"><img src="assets/utc.webp" alt="Clock and world time artwork"></div><p>Enter the event's date and UTC time. The displayed local time automatically accounts for daylight saving where applicable.</p><p class="muted" style="font-size:12px">Includes the UK, Italy/central Europe, US East/West, Saudi Arabia, UAE and Sydney.</p></section></div>${appointmentsPanel()}`;
+    if(!utcSelection.date){const now=new Date().toISOString();utcSelection={date:now.slice(0,10),time:now.slice(11,16)};}
+    const steps=[
+      {title:'Time Converter',desc:'Pick the UTC event time and see it in alliance time zones.'},
+      {title:'Appointments',desc:'Keep personal appointment notes and copy your UTC schedule.'}
+    ];
+    const stage=otherToolSteps.utc===0?
+      '<section class="content-card ks-utc-card"><span class="eyebrow">EVENT TIME PLANNER</span><h2>Convert UTC event times</h2><p>All regions adjust for their local daylight-saving dates.</p><div class="form-grid"><label>UTC date<input type="date" id="utcDate" required value="'+esc(utcSelection.date)+'"></label><label>UTC time<input type="time" id="utcTime" required value="'+esc(utcSelection.time)+'"></label></div><div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>':
+      appointmentsPanel();
+    const times=otherToolSteps.utc===0?['8 regions','Live conversion','DST aware']:['Schedule','Saved on device','UTC times'];
+    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 2</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong>'+appointments().length+' saved</strong></div>';
+    return header('UTC Time Converter','Convert alliance times and keep appointment notes in the same easy step-by-step view.')+
+      flowWorkspace('utc','Event Time Planner','UTC TIME CONVERTER / EVENT PLANNING','Convert event times, then organise your kingdom appointment schedule.','◷',steps,stage,summary);
   }
   function allAppointments(){try{return JSON.parse(localStorage.getItem(APT_KEY)||'{}')||{};}catch(e){return {};}}
   function appointments(){const arr=allAppointments()[profile().id];return Array.isArray(arr)?arr:[];}
@@ -189,13 +222,24 @@
     try{await navigator.clipboard.writeText(content);toast('Appointment schedule copied.');}catch(e){toast('Copy unavailable in this browser.');}
   }
   function messagePage(){
-    const draft=profile().draft||'';
-    return `${header('Message Creator','Write copy-ready alliance notices, check character and line limits, and save drafts per profile.')}
-    <div class="wide-grid"><div class="message-left"><section class="content-card"><span class="eyebrow">ALLIANCE COMMS</span><h2>Compose your announcement</h2><label>Starter template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>
-    <label style="margin-top:16px">Message<textarea id="messageBody" maxlength="15000" placeholder="Type your alliance message here...">${esc(draft)}</textarea></label>
-    <div class="counter-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div><div id="limitHint" class="template-hint">These limits are for Kingshot's typical short announcement format; confirm the applicable in-game field limit.</div>
-    <div class="form-actions"><button class="button button-primary" data-action="copy-message">▣ Copy Message</button><button class="button button-dark" data-action="save-draft">Save Draft</button><button class="button button-ghost" data-action="clear-message">Clear</button></div></section>${secretEmojiPanel()}</div>
-    <section class="content-card"><div class="tool-page-hero" style="height:190px;margin-bottom:20px"><img src="assets/messages.webp" alt="Alliance scroll and message artwork"></div><span class="eyebrow">DRAFT SAVING</span><h2>Ready to send</h2><p>Build short, readable messages for alliance members. The counter helps you stay within 512 characters and 10 lines when needed.</p><div class="info-strip">The <strong>Save Draft</strong> button saves the message to your currently selected profile on this device.</div></section></div>`;
+    const draft=getMessageText();
+    const steps=[
+      {title:'Compose',desc:'Write your alliance notice or choose a ready-made template.'},
+      {title:'Secret Emojis',desc:'Find Kingshot Unicode icons and insert them into your message.'},
+      {title:'Review & Copy',desc:'Check your message length and copy the finished notice.'}
+    ];
+    let stage;
+    if(otherToolSteps.message===0){
+      stage='<section class="content-card ks-compose-panel"><span class="eyebrow">ALLIANCE COMMUNICATIONS</span><h2>Compose your announcement</h2><label>Starting template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
+      '<label style="margin-top:16px">Your message<textarea id="messageBody" maxlength="15000" placeholder="Type your alliance announcement...">'+esc(draft)+'</textarea></label>'+
+      '<div class="counter-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div>'+
+      '<p class="muted" style="font-size:12px">In-game character and line limits vary by message type. Check before sending.</p>'+
+      '<div class="form-actions"><button type="button" class="button button-primary" data-action="copy-message">▣ Copy Message</button><button type="button" class="button button-dark" data-action="save-draft">Save Draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div></section>';
+    }else if(otherToolSteps.message===1){
+      stage='<section class="content-card ks-draft-status"><span class="eyebrow">CURRENT DRAFT</span><h2>Unicode emoji picker</h2><p>Tap Insert on any code below. Icons are added to your draft without losing the words you wrote.</p><div class="ks-draft-preview" id="emojiDraftPreview">'+(draft?esc(draft):'Your message is empty. You can still select an icon to begin.')+'</div></section>'+secretEmojiPanel();
+    }else{stage=previewMessage();}
+    return header('Message Creator','Create alliance messages using the same easy step-by-step layout as Viking Vengeance.')+
+      flowWorkspace('message','Message Creator','ALLIANCE COMMS / MESSAGE STUDIO','Compose, add secret Unicode icons and prepare a message ready for Kingshot.','✉',steps,stage,messageSummary());
   }
   const EMOJI_SET=[
     [0xE001,'Gem','Resources','💎'],[0xE012,'Bag of Gems','Resources','💎'],[0xE002,'Bread','Resources','🍞'],[0xE003,'Wood','Resources','🪵'],[0xE004,'Coal','Resources','⚫'],[0xE005,'Iron','Resources','⛓️'],[0xE006,'Gold','Resources','🪙'],[0xE010,'Truegold','Resources','✨'],
