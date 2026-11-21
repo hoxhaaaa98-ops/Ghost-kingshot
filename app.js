@@ -230,23 +230,38 @@
   }
   function messagePage(){
     const draft=getMessageText();
-    const steps=[
-      {title:'Compose',desc:'Write your alliance notice or choose a ready-made template.'},
-      {title:'Secret Emojis',desc:'Find Kingshot Unicode icons and insert them into your message.'},
-      {title:'Review & Copy',desc:'Check your message length and copy the finished notice.'}
-    ];
-    let stage;
-    if(otherToolSteps.message===0){
-      stage='<section class="content-card ks-compose-panel"><span class="eyebrow">ALLIANCE COMMUNICATIONS</span><h2>Compose your announcement</h2><label>Starting template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
-      '<label style="margin-top:16px">Your message<textarea id="messageBody" maxlength="15000" placeholder="Type your alliance announcement...">'+esc(draft)+'</textarea></label>'+
-      '<div class="counter-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div>'+
-      '<p class="muted" style="font-size:12px">In-game character and line limits vary by message type. Check before sending.</p>'+
-      '<div class="form-actions"><button type="button" class="button button-primary" data-action="copy-message">▣ Copy Message</button><button type="button" class="button button-dark" data-action="save-draft">Save Draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div></section>';
-    }else if(otherToolSteps.message===1){
-      stage='<section class="content-card ks-draft-status"><span class="eyebrow">CURRENT DRAFT</span><h2>Unicode emoji picker</h2><p>Tap Insert on any code below. Icons are added to your draft without losing the words you wrote.</p><div class="ks-draft-preview" id="emojiDraftPreview">'+(draft?esc(draft):'Your message is empty. You can still select an icon to begin.')+'</div></section>'+secretEmojiPanel();
-    }else{stage=previewMessage();}
-    return header('Message Creator','Create alliance messages using the same easy step-by-step layout as Viking Vengeance.')+
-      flowWorkspace('message','Message Creator','ALLIANCE COMMS / MESSAGE STUDIO','Compose, add secret Unicode icons and prepare a message ready for Kingshot.','✉',steps,stage,messageSummary());
+    const characters=draft.length,lines=draft?draft.split(/\r?\n/).length:0;
+    const quickTemplates=[['event','Event reminder'],['notice','Announcement'],['rules','Rules reminder'],['battle','Battle plan']];
+    return header('Message Creator','Draft, format and copy Kingshot alliance announcements without leaving the editor.')+
+      '<div class="ms-studio">'+
+      '<div class="ms-hero"><div class="ms-hero-copy"><span class="ms-kicker">GHOST’S KINGSHOT TOOLS / ALLIANCE COMMS</span><h2>Comms Studio<span class="ms-hero-spark"> ✦</span></h2><p>Draft announcements, drop in secret Kingshot icons and prepare your message for sending — all in one workspace.</p></div>'+
+      '<div class="ms-hero-stamp"><span>▤</span><strong>ALLIANCE<br>DISPATCH</strong></div></div>'+
+      '<div class="ms-dashboard" aria-label="Live message stats">'+
+        '<div class="ms-metric"><span>CHARACTER LIMIT</span><strong id="msCharMetric">'+characters+' <small>/ 512</small></strong><span class="ms-progress"><span id="msCharFill" style="width:'+Math.min(100,Math.round(characters/512*100))+'%"></span></span></div>'+
+        '<div class="ms-metric"><span>LINE LIMIT</span><strong id="msLineMetric">'+lines+' <small>/ 10</small></strong><span class="ms-progress"><span id="msLineFill" style="width:'+Math.min(100,Math.round(lines/10*100))+'%"></span></span></div>'+
+        '<div class="ms-metric"><span>MESSAGE STATUS</span><strong class="ms-state" id="msMessageState">'+(characters===0?'Ready to write':characters>512||lines>10?'Over short-limit':'Within short-limit')+'</strong><small class="ms-status-sub">For short announcements</small></div>'+
+      '</div>'+
+      '<div class="ms-grid">'+
+        '<section class="content-card ms-compose" aria-label="Message editor">'+
+          '<div class="ms-section-head"><div><span class="ms-overline">01 / WRITING SPACE</span><h2>Compose a message</h2><p>Type freely, or start from a ready-made format.</p></div><span class="ms-section-mark">✎</span></div>'+
+          '<div class="ms-template-bar"><span>QUICK START</span><div class="ms-template-chips">'+quickTemplates.map(([value,label])=>'<button type="button" class="ms-template-chip" data-action="message-quick-template" data-template="'+value+'">'+label+'</button>').join('')+'</div></div>'+
+          '<label class="ms-template-label">Or select a template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
+          '<label class="ms-editor-label">MESSAGE CONTENT<textarea id="messageBody" maxlength="15000" spellcheck="true" placeholder="Write your alliance message here...">'+esc(draft)+'</textarea></label>'+
+          '<div class="ms-editor-footer"><div class="ms-limit-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div><p>Short-message limits may vary in Kingshot. The editor won’t erase anything if you go over.</p></div>'+
+          '<div class="ms-actions"><button type="button" class="button button-primary ms-copy-main" data-action="copy-message">▣ Copy message</button><button type="button" class="button button-dark" data-action="save-draft">Save draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div>'+
+        '</section>'+
+        '<aside class="ms-aside"><section class="ms-preview-card" aria-label="Live message preview">'+
+          '<div class="ms-preview-head"><span class="ms-live-dot"></span><span>LIVE MESSAGE PREVIEW</span><strong>◉</strong></div>'+
+          '<div class="ms-preview-body"><div class="ms-preview-identity"><span class="ms-preview-avatar">♛</span><div><strong>Alliance notice</strong><small>Preview · not sent</small></div></div>'+
+          '<div class="ms-preview-paper"><pre id="messagePreview">'+(draft?esc(draft):'Your announcement will appear here as you type...')+'</pre></div>'+
+          '<div class="ms-preview-summary"><span id="msWordCount">0 words</span><span id="msPreviewLabel">Ready to create</span></div></div>'+
+          '<div class="ms-preview-footer">Nothing is posted to Kingshot automatically. Use Copy message to paste it into the game.</div>'+
+        '</section><div class="ms-aside-tip"><span>✦</span><p><strong>Instant updates.</strong> Edit your message or insert a secret icon below — the preview updates immediately.</p></div></aside>'+
+      '</div>'+
+      '<details class="ms-vault" open><summary><span class="ms-vault-symbol">✧</span><span><strong>Secret Kingshot Emoji Vault</strong><small>Find Unicode item icons and insert them directly into your draft</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary>'+
+      '<div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
+      '<div class="ms-bottom-note"><strong>Saved on your device.</strong> Click Save draft to store your message under the selected player profile. Copying never sends it automatically.</div>'+
+      '</div>';
   }
   const EMOJI_SET=[
     [0xE001,'Gem','Resources','💎'],[0xE012,'Bag of Gems','Resources','💎'],[0xE002,'Bread','Resources','🍞'],[0xE003,'Wood','Resources','🪵'],[0xE004,'Coal','Resources','⚫'],[0xE005,'Iron','Resources','⛓️'],[0xE006,'Gold','Resources','🪙'],[0xE010,'Truegold','Resources','✨'],
@@ -279,7 +294,7 @@
   function render(){const page=currentPage();
     if(page!==previouslyRendered){
       if(page==='utc')utcToolView='converter';
-      if(page==='message'){otherToolSteps.message=0;messageBuffer=null;}
+      if(page==='message'){messageBuffer=null;emojiCategory='All';}
       previouslyRendered=page;
     }
     $('appMain').innerHTML=page==='dashboard'?dashboard():page==='profile'?profilePage():page==='settings'?settingsPage():page==='help'?helpPage():page==='utc'?utcPage():page==='message'?messagePage():gameTool(TOOLS.find(t=>t.id===page));
@@ -323,7 +338,18 @@
     if(ml)ml.textContent=lines+' / 10';
     const echo=$('emojiDraftPreview'),preview=$('messagePreview');
     if(echo)echo.textContent=value||'Your message is empty. You can still select an icon to begin.';
-    if(preview)preview.textContent=value||'No message written yet. Return to Compose to create one.';
+    if(preview)preview.textContent=value||'Your announcement will appear here as you type...';
+    const cm=$('msCharMetric'),lm=$('msLineMetric'),stateEl=$('msMessageState');
+    if(cm)cm.innerHTML=value.length+' <small>/ 512</small>';
+    if(lm)lm.innerHTML=lines+' <small>/ 10</small>';
+    const cf=$('msCharFill'),lf=$('msLineFill');
+    if(cf)cf.style.width=Math.min(100,Math.round(value.length/512*100))+'%';
+    if(lf)lf.style.width=Math.min(100,Math.round(lines/10*100))+'%';
+    const over=value.length>512||lines>10;
+    if(stateEl){stateEl.textContent=!value?'Ready to write':over?'Over short-limit':'Within short-limit';stateEl.className='ms-state'+(over?' ms-over':'');}
+    const wordCount=$('msWordCount'),previewLabel=$('msPreviewLabel');
+    if(wordCount)wordCount.textContent=(value.trim()?value.trim().split(/\s+/).length:0)+' words';
+    if(previewLabel)previewLabel.textContent=over?'Check limits':value?'Preview updated':'Ready to create';
   }
   const TEMPLATES={blank:'',event:'ALLIANCE EVENT REMINDER\nEvent: [Event name]\nDate: [Day / Date]\nTime: [00:00 UTC]\nPlease be ready a few minutes early.',notice:'ALLIANCE ANNOUNCEMENT\n\n[Your announcement]\n\nPlease contact R4/R5 with questions.',rules:'ALLIANCE RULES REMINDER\n\n[State the applicable rule clearly]\n\nPlease contact leadership before retaliating.',battle:'EVENT BATTLE PLAN\nObjective: [Target]\nSquad A: [Task]\nSquad B: [Task]\nBackup: [Task]\nFollow R4/R5 instructions.'};
   function saveDraft(){if(!hasProfile()){openProfile(true);toast('Create a profile to save drafts.');return;}profile().draft=getMessageText();save();toast('Draft saved to '+profile().name+'.');}
@@ -386,6 +412,17 @@
     else if(action==='emoji-copy')copyCharacter(String.fromCharCode(Number(btn.dataset.code)));
     else if(action==='convert-time')convertUTC();
     else if(action==='utc-now'){const now=new Date();$('utcDate').value=now.toISOString().slice(0,10);$('utcTime').value=now.toISOString().slice(11,16);convertUTC();}
+    else if(action==='message-quick-template'){
+      const chosen=TEMPLATES[btn.dataset.template];
+      if(typeof chosen==='string'){
+        if(getMessageText().trim()&&!confirm('Replace your current message with this template?'))return;
+        messageBuffer=chosen;
+        if($('messageBody'))$('messageBody').value=chosen;
+        if($('messageTemplate'))$('messageTemplate').value=btn.dataset.template;
+        updateCounts();
+        $('messageBody')?.focus();
+      }
+    }
     else if(action==='save-draft')saveDraft();
     else if(action==='copy-message')copyMessage();
     else if(action==='clear-message'){if(confirm('Clear the message editor?')){messageBuffer='';if($('messageBody'))$('messageBody').value='';updateCounts();}}
