@@ -126,18 +126,32 @@ function resultHTML(data,plan){
   '</div>';
 }
 function formHTML(data){
- const zoneChoices=TIMEZONES.slice();if(!zoneChoices.some(([,value])=>value===data.zone))zoneChoices.unshift(['Your device time zone ('+data.zone+')',data.zone]);
+ const zoneChoices=TIMEZONES.slice();
+ if(!zoneChoices.some(([,value])=>value===data.zone))zoneChoices.unshift(['Your device time zone ('+data.zone+')',data.zone]);
+ const training=data.activity==='training';
+ const ministerOffices=training?['Noble Advisor','Chief Minister']:OFFICES;
  const plan=calculate(data);
- return '<section class="content-card mp-panel"><div class="mp-top"><span class="mp-emblem">♛</span><div><span class="eyebrow">MINISTER / KINGDOM APPOINTMENTS</span><h2>Next Minister Application</h2><p>Find the next suitable planning time in your own time zone, alongside the UTC server time.</p></div></div>'+
- '<div class="mp-fields"><label>Minister position<select data-mp="office">'+OFFICES.map(v=>opt(v,v,data.office)).join('')+'</select></label>'+
+ return '<section class="content-card mp-panel">'+
+ '<div class="mp-top"><span class="mp-emblem">♛</span><div><span class="eyebrow">KINGDOM MINISTER TIMING</span><h2>Minister Appointment Calculator</h2><p>Find a suitable appointment time and compare your local clock with UTC server time.</p></div></div>'+
+ '<div class="mp-purpose"><button type="button" data-mp-action="purpose" data-purpose="general" class="mp-purpose-card '+(training?'':'is-active')+'"><span class="mp-purpose-icon">♛</span><strong>General Appointment</strong><small>Find a slot or enter an appointment time you already know.</small></button>'+
+ '<button type="button" data-mp-action="purpose" data-purpose="training" class="mp-purpose-card '+(training?'is-active':'')+'"><span class="mp-purpose-icon">⚔</span><strong>Extra Troop Training</strong><small>Time your next minister application around a training batch.</small></button></div>'+
+ '<div class="mp-fields"><label>Minister position<select data-mp="office">'+ministerOffices.map(v=>opt(v,v,data.office)).join('')+'</select></label>'+
  '<label>Your local time zone<select data-mp="zone">'+zoneChoices.map(([label,value])=>opt(value,label,data.zone)).join('')+'</select></label>'+
- '<label>Kingdom appointment mode<select data-mp="mode">'+opt('slot','By Time Slot (30-minute planning slots)',data.mode)+opt('queue','By Queue (timing not guaranteed)',data.mode)+'</select></label>'+
- '<label>How should we find the time?<select data-mp="basis">'+opt('next','Find next suitable time',data.basis)+opt('fixed','I know the appointment UTC date/time',data.basis)+'</select></label>'+
+ '<label>Kingdom appointment mode<select data-mp="mode">'+opt('slot','Time Slots · 30-minute planning grid',data.mode)+opt('queue','Queue · time not guaranteed',data.mode)+'</select></label>'+
+ (!training?'<label>Calculate using<select data-mp="basis">'+opt('next','Next suitable time',data.basis)+opt('fixed','Known UTC appointment date/time',data.basis)+'</select></label>':
+ '<div class="mp-field-context"><strong>Training appointment</strong><span>Noble Advisor: +50% training speed and +200 training capacity when starting a new batch. Chief Minister also adds training speed.</span></div>')+
  '</div>'+
- (data.basis==='next'?'<div class="mp-extra"><label>Earliest suitable local time (optional)<input data-mp="earliest" type="time" value="'+q(data.earliest)+'"></label><div class="mp-field-hint">Leave blank for the next possible 30-minute UTC planning boundary. Set a time (such as 19:00) to find a slot at or after that local time.</div></div>':
- '<div class="mp-extra mp-fields"><label>Confirmed / planned UTC date<input data-mp="fixedDate" type="date" value="'+q(data.fixedDate)+'"></label><label>Planned UTC appointment time<input data-mp="fixedTime" type="time" value="'+q(data.fixedTime)+'"></label></div>')+
- '<div class="mp-extra"><label>How early should I check / apply?<select data-mp="lead">'+[0,5,10,15,30].map(v=>opt(v,v===0?'At the start time':v+' minutes before',data.lead)).join('')+'</select></label></div>'+
- '<p class="mp-guidance">Calculated times adjust automatically for daylight saving. In-game minister applications, queue position, King approval and appointment availability must still be checked inside Kingshot.</p>'+
+ (training?
+  '<div class="mp-timer-card"><div class="mp-timer-heading"><span>◷</span><div><strong>How long is left on your current troop training?</strong><p>Copy the countdown currently shown in Kingshot.</p></div></div>'+
+  '<div class="mp-timer-fields"><label>Hours<input data-mp="trainHours" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="00" value="'+q(data.trainHours)+'"></label>'+
+  '<label>Minutes<input data-mp="trainMinutes" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="00" value="'+q(data.trainMinutes)+'"></label>'+
+  '<label>Seconds<input data-mp="trainSeconds" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="00" value="'+q(data.trainSeconds)+'"></label></div>'+
+  '<label class="mp-buffer-label">Allow extra time after training finishes<select data-mp="trainBuffer">'+[0,5,10,15,30].map(v=>opt(v,v===0?'None — first suitable slot':v+' minutes',data.trainBuffer)).join('')+'</select></label>'+
+  '<p class="mp-timer-note">We record the time you entered the countdown, estimate when the current batch will finish, then find the next suitable UTC time slot. If your timer changes in-game, update these values.</p></div>':
+  (data.basis==='next'?'<div class="mp-extra"><label>Earliest suitable local time (optional)<input data-mp="earliest" type="time" value="'+q(data.earliest)+'"></label><div class="mp-field-hint">Leave blank for the next UTC 30-minute planning boundary. Or choose a time you are next available locally.</div></div>':
+  '<div class="mp-extra mp-fields"><label>Known UTC appointment date<input data-mp="fixedDate" type="date" value="'+q(data.fixedDate)+'"></label><label>Known UTC appointment time<input data-mp="fixedTime" type="time" value="'+q(data.fixedTime)+'"></label></div>'))+
+ '<div class="mp-extra"><label>When should I check / apply?<select data-mp="lead">'+[0,5,10,15,30].map(v=>opt(v,v===0?'At the planned start time':v+' minutes before',data.lead)).join('')+'</select></label></div>'+
+ '<p class="mp-guidance">Times adjust for daylight saving. This tool calculates when to check or apply, not whether the minister position is available. Always confirm in-game.</p>'+
  resultHTML(data,plan)+'</section>';
 }
 function render(){
