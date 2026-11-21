@@ -247,7 +247,7 @@
           '<div class="ms-template-bar"><span>QUICK START</span><div class="ms-template-chips">'+quickTemplates.map(([value,label])=>'<button type="button" class="ms-template-chip" data-action="message-quick-template" data-template="'+value+'">'+label+'</button>').join('')+'</div></div>'+
           '<label class="ms-template-label">Or select a template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
           '<label class="ms-editor-label">MESSAGE CONTENT<textarea id="messageBody" maxlength="15000" spellcheck="true" placeholder="Write your alliance message here...">'+esc(draft)+'</textarea></label>'+
-          '<details class="ms-vault ms-vault-inline" id="msEmojiVault"><summary><span class="ms-vault-symbol">✧</span><span><strong>Browse '+ALL_ICONS.length+' emojis & symbols</strong><small>Arrows, circled numbers, UTC labels and Kingshot icons · Tap to expand</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary><div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
+          '<details class="ms-vault ms-vault-inline" id="msEmojiVault"><summary><span class="ms-vault-symbol">✧</span><span><strong>Choose an emoji or symbol</strong><small>Tap any icon to insert it into your message</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary><div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
           '<div class="ms-editor-footer"><div class="ms-limit-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div><p>Short-message limits may vary in Kingshot. The editor won’t erase anything if you go over.</p></div>'+
           '<div class="ms-actions"><button type="button" class="button button-primary ms-copy-main" data-action="copy-message">▣ Copy message</button><button type="button" class="button button-dark" data-action="save-draft">Save draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div>'+
         '</section>'+
@@ -283,32 +283,22 @@
   const ALL_ICONS=[...EMOJI_SET,...SYMBOL_SET];
   const EMOJI_CATS=['All','Resources','Speedups','Heroes & Gear','Events & Coins','More Icons','Symbols & Arrows','Circled Numbers'];
   function secretEmojiPanel(){
-    return `<section class="secret-emojis" aria-label="Kingshot secret Unicode emojis"><div class="emoji-heading"><span class="emoji-icon">✦</span><div><span class="eyebrow">KINGSHOT SECRET UNICODE</span><h2>Emoji & Symbol Library</h2><p>Search Kingshot item icons, arrows, markers, circled numbers and UTC labels. Tap Insert to add them to your message.</p></div></div>
-    <div class="emoji-search"><input id="emojiSearch" type="search" placeholder="Search arrows, numbers, UTC, gems..." aria-label="Search Unicode items"><span id="emojiCount"></span></div>
-    <div class="emoji-categories" role="group" aria-label="Emoji category">${EMOJI_CATS.map((cat,i)=>`<button type="button" class="emoji-cat ${i===0?'selected':''}" data-action="emoji-filter" data-cat="${esc(cat)}">${esc(cat)}</button>`).join('')}</div>
-    <div id="emojiResults" class="emoji-grid"></div>
-    <p class="emoji-disclaimer"><strong>Note:</strong> Kingshot item codes are community-reported private-use characters and may display differently in or outside the game. The added arrows, numbers and UTC label are standard text symbols. Test the result in Kingshot before sending.</p></section>`;
+    return '<section class="secret-emojis ms-simple-picker" aria-label="Kingshot emoji and symbol picker">'+
+      '<p class="ms-picker-hint">Tap an icon to add it to your message.</p>'+
+      '<div id="emojiResults" class="emoji-grid ms-icon-grid" role="group" aria-label="Emoji and symbol choices"></div>'+
+      '<p class="ms-picker-note">Some Kingshot-specific icons may display differently in-game.</p>'+
+    '</section>';
   }
-  let emojiCategory='All';
   function refreshEmojis(){
     const out=$('emojiResults');if(!out)return;
-    const query=($('emojiSearch')?.value||'').toLowerCase().trim();
-    const filtered=ALL_ICONS.filter(([code,name,cat,picture,override])=>
-      (emojiCategory==='All'||cat===emojiCategory)&&
-      (name.toLowerCase().includes(query)||cat.toLowerCase().includes(query)||('u+'+code.toString(16)).includes(query)||String(override||picture).toLowerCase().includes(query)));
-    $('emojiCount').textContent=filtered.length+' items';
-    out.innerHTML=filtered.map(([code,name,cat,picture,override])=>{
+    out.innerHTML=ALL_ICONS.map(([code,name,cat,picture,override])=>{
       const value=override||String.fromCodePoint(code);
-      const label=override?'TEXT':'U+'+code.toString(16).toUpperCase();
-      const special=cat==='Symbols & Arrows'||cat==='Circled Numbers';
-      return '<div class="emoji-item"><div class="emoji-standin'+(special?' emoji-standin-symbol':'')+'">'+esc(picture)+'</div>'+
-       '<div class="emoji-info"><strong>'+esc(name)+'</strong><small>'+esc(label)+'</small></div>'+
-       '<div class="emoji-actions"><button type="button" data-action="emoji-insert" data-insert="'+esc(value)+'" aria-label="Insert '+esc(name)+'">↓ Insert</button>'+
-       '<button type="button" data-action="emoji-copy" data-insert="'+esc(value)+'" aria-label="Copy '+esc(name)+'">▣</button></div></div>';
-    }).join('')||'<p class="emoji-empty">No matching icons or symbols.</p>';
-    document.querySelectorAll('.emoji-cat').forEach(button=>button.classList.toggle('selected',button.dataset.cat===emojiCategory));
+      const isSymbol=cat==='Symbols & Arrows'||cat==='Circled Numbers';
+      return '<button type="button" class="ms-icon-choice'+(isSymbol?' ms-icon-choice-symbol':'')+
+        '" data-action="emoji-insert" data-insert="'+esc(value)+
+        '" aria-label="Insert '+esc(name)+'" title="'+esc(name)+'">'+esc(picture)+'</button>';
+    }).join('');
   }
-  async function copyCharacter(ch){try{await navigator.clipboard.writeText(ch);toast('Unicode character copied.');}catch(e){toast('Copy not available in this browser. Use Insert instead.');}}
   function insertEmoji(ch){const box=$('messageBody');if(box){const a=box.selectionStart??box.value.length,b=box.selectionEnd??a;box.setRangeText(ch,a,b,'end');box.focus();messageBuffer=box.value;}else{messageBuffer=getMessageText()+ch;toast('Unicode icon inserted into draft.');}updateCounts();}
   function settingsPage(){return `${header('Settings','Keep control of saved profiles and move your information between websites.')}<div class="wide-grid"><section class="content-card"><span class="eyebrow">YOUR DATA</span><h2>Backup & restore</h2><p>Export profiles, message drafts, Viking setups, minister application preferences and appointment notes. You can also import profile backups exported from Floot.</p><div class="data-controls"><button class="button button-primary" data-action="export-data">↓ Export Backup</button><button class="button button-ghost" data-action="import-data">↑ Import Backup</button><input id="backupFile" type="file" accept=".json,application/json"></div></section><section class="content-card"><h2>Storage & privacy</h2><p>Profiles, drafts and tool setups are stored in this browser only. Other players create their own profiles. To migrate from Floot, export a backup on the old site and import it here.</p><p class="muted" style="font-size:12px">A new website has separate browser storage; old Floot profiles cannot appear automatically. Export a backup first.</p></section></div>`;}
   function helpPage(){return `${header('Help & FAQ','Quick answers about how this early version works.')}<section class="content-card faq"><details open><summary>Which calculators are available?</summary><p>UTC conversion, Message Creator and the Kingshot Viking Vengeance squad planner work now. The Viking planner estimates hero level capacity and supports exact in-game overrides. Bear Trap and KvK calculators are next.</p></details><details><summary>Does my profile save automatically?</summary><p>Yes. Profile changes save to local browser storage as soon as you submit the profile form. Draft messages save when you press Save Draft.</p></details><details><summary>Can I use the same profile on an iPhone and a computer?</summary><p>Not automatically in this release. Export and import your backup through Settings; optional cloud accounts can be added later.</p></details><details><summary>Is Kingshot Tools official?</summary><p>No. It is an independent, fan-made community toolkit, not affiliated with or endorsed by the game publisher.</p></details></section>`;}
@@ -429,9 +419,7 @@
     else if(action==='toggle-favorite')toggleFav(btn.dataset.id);
     else if(action==='delete-appointment')removeAppointment(btn.dataset.id);
     else if(action==='copy-appointments')copyAppointments();
-    else if(action==='emoji-filter'){emojiCategory=btn.dataset.cat;refreshEmojis();}
     else if(action==='emoji-insert')insertEmoji(btn.dataset.insert??String.fromCharCode(Number(btn.dataset.code)));
-    else if(action==='emoji-copy')copyCharacter(btn.dataset.insert??String.fromCharCode(Number(btn.dataset.code)));
     else if(action==='convert-time')convertUTC();
     else if(action==='utc-now'){const now=new Date();$('utcDate').value=now.toISOString().slice(0,10);$('utcTime').value=now.toISOString().slice(11,16);convertUTC();}
     else if(action==='message-quick-template'){
@@ -452,7 +440,6 @@
     else if(action==='import-data')$('backupFile').click();
   });
   document.addEventListener('input',e=>{if(e.target.id==='messageBody'){messageBuffer=e.target.value;updateCounts();}
-    if(e.target.id==='emojiSearch')refreshEmojis();
     if(e.target.id==='utcDate'||e.target.id==='utcTime')utcSelection={date:$('utcDate')?.value||utcSelection.date,time:$('utcTime')?.value||utcSelection.time};});
   document.addEventListener('change',e=>{
     if(e.target.dataset?.viking){const obj=allViking();obj[profile().id]={...vikingData(),[e.target.dataset.viking]:e.target.value};localStorage.setItem(CAP_KEY,JSON.stringify(obj));refreshViking();}
