@@ -305,7 +305,7 @@
           '" data-action="emoji-insert" data-insert="'+esc(value)+
           '" aria-label="Insert '+esc(name)+'" title="'+esc(name)+'">'+
           '<span class="ms-icon-picture" aria-hidden="true">'+esc(picture)+'</span>'+
-          '<span class="ms-icon-name">'+esc(name.replace(/ \(unconfirmed\)/g,''))+'</span></button>';
+          '<span class="ms-icon-name">'+esc(name.replace(/ \(unconfirmed\)/g,' · unverified'))+'</span></button>';
       }).join('')+'</div></div>'
     ).join('');
   }
