@@ -306,7 +306,7 @@
   function render(){const page=currentPage();
     if(page!==previouslyRendered){
       if(page==='utc')utcToolView='converter';
-      if(page==='message'){messageBuffer=null;emojiCategory='All';}
+      if(page==='message'){messageBuffer=null;}
       previouslyRendered=page;
     }
     $('appMain').innerHTML=page==='dashboard'?dashboard():page==='profile'?profilePage():page==='settings'?settingsPage():page==='help'?helpPage():page==='utc'?utcPage():page==='message'?messagePage():gameTool(TOOLS.find(t=>t.id===page));
