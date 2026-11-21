@@ -109,9 +109,10 @@ function calculate(data,now=Date.now()){
 let current=null;
 function resultHTML(data,plan){
  if(plan.error)return '<div class="mp-warning" role="status">'+q(plan.error)+'</div>';
- const slotLabel=data.mode==='queue'?'Suggested queue check':'Planned appointment start';
+ const slotLabel=data.mode==='queue'?'Suggested queue check':plan.trainingEnd?'Next suitable planning slot':'Planned appointment start';
  const applyLabel=data.mode==='queue'?'Suggested time to check/apply':'Suggested application/check time';
  return '<div class="mp-results" aria-live="polite">'+
+  (plan.trainingEnd?'<div class="mp-training-finish"><div><small>Current training finishes · Your local time</small><strong>'+q(dateLabel(plan.trainingEnd,plan.zone))+'</strong></div><div><small>Current training finishes · UTC</small><strong>'+q(dateLabel(plan.trainingEnd,'UTC'))+'</strong></div></div>':'')+
   '<div class="mp-results-head"><span>♛ YOUR NEXT '+(data.mode==='queue'?'QUEUE CHECK':'MINISTER SLOT')+'</span><strong>'+q(data.office)+'</strong></div>'+
   '<div class="mp-result-grid"><div class="mp-result mp-highlight"><small>'+slotLabel+' · Your local time</small><strong>'+q(dateLabel(plan.start,plan.zone))+'</strong></div>'+
   '<div class="mp-result"><small>'+slotLabel+' · UTC server time</small><strong>'+q(dateLabel(plan.start,'UTC'))+'</strong></div>'+
@@ -145,10 +146,21 @@ function render(){
 function onChange(event){
  const input=event.target.closest('[data-mp]');if(!input||!current)return;
  const key=input.dataset.mp;if(!Object.prototype.hasOwnProperty.call(current.data,key))return;
- current.data[key]=input.value;write(current.id,current.data);render();
+ current.data[key]=input.value;
+ if(['trainHours','trainMinutes','trainSeconds'].includes(key))current.data.trainCapturedAt=String(Date.now());
+ write(current.id,current.data);render();
 }
 function onClick(event){
  const btn=event.target.closest('[data-mp-action]');if(!btn||!current)return;
+ if(btn.dataset.mpAction==='purpose'){
+    const wasTraining=current.data.activity==='training';
+    current.data.activity=btn.dataset.purpose==='training'?'training':'general';
+    if(current.data.activity==='training'){
+      current.data.basis='training';
+      if(!wasTraining)current.data.office='Noble Advisor';
+    }else if(current.data.basis==='training')current.data.basis='next';
+    write(current.id,current.data);render();return;
+ }
  if(btn.dataset.mpAction==='calculate'){render();return;}
  if(btn.dataset.mpAction==='copy'){
   const p=calculate(current.data);if(p.error)return;
