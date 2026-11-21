@@ -30,7 +30,37 @@ const f=v=>Math.round(v).toLocaleString('en-GB');
 const clamp=(x,lo,hi)=>Math.min(hi,Math.max(lo,x));
 const option=(value,title,selected)=>`<option value="${e(value)}" ${String(value)===String(selected)?'selected':''}>${e(title)}</option>`;
 const numberInput=(id,value,label,placeholder='0')=>`<label>${label}<input type="number" inputmode="numeric" min="0" data-vk="${id}" value="${e(value)}" placeholder="${e(placeholder)}"></label>`;
-const heroChoice=(chosen,type='')=>`<option value="">None — No hero</option>`+HEROS.filter(h=>!type||h[1]===type).map(([name,t,g])=>option(name,`${name} · ${t} (Gen ${g})`,chosen)).join('');
+function usedHeroes(data,except=''){
+ const used=new Set();
+ for(const type of TYPES){const path='guard.'+type;const name=data.guard[type];if(name&&path!==except)used.add(name);}
+ const m=clamp(n(data.marches)||6,1,7);
+ for(let i=0;i<m;i++){const squad=data.squads[i];for(let j=0;j<clamp(n(squad.slots),0,3);j++){
+   const path='squads.'+i+'.heroes.'+j+'.name';const name=squad.heroes[j]?.name;
+   if(name&&path!==except)used.add(name);
+ }}
+ return used;
+}
+function normalizeAssignedHeroes(data){
+ // Reserve guard heroes first; then heroes in city squads in assignment order.
+ const used=new Set();
+ for(const type of TYPES){const name=data.guard[type];if(!name)continue;
+   if(used.has(name)||HERO_MAP.get(name)?.type!==type)data.guard[type]='';
+   else used.add(name);
+ }
+ const m=clamp(n(data.marches)||6,1,7);
+ for(let i=0;i<m;i++){const squad=data.squads[i];for(let j=0;j<clamp(n(squad.slots),0,3);j++){
+  const hero=squad.heroes[j];if(!hero?.name)continue;
+  if(used.has(hero.name)||!HERO_MAP.has(hero.name)){hero.name='';hero.level='';}
+  else used.add(hero.name);
+ }}
+}
+function heroChoice(data,chosen,type='',except=''){
+ const used=usedHeroes(data,except);
+ return '<option value="">None — No hero</option>'+HEROS.filter(([name,t])=>(!type||t===type)&&(!used.has(name)||name===chosen)).map(([name,t,g])=>option(name,`${name} · ${t} (Gen ${g})`,chosen)).join('');
+}
+function heroLevelChoice(selected){
+ return '<option value="">Select hero level</option>'+Array.from({length:80},(_,i)=>option(i+1,`Level ${i+1} · +${f(CAPACITY[i+1]||0)} capacity`,selected)).join('');
+}
 const squadChoice=(squads,chosen)=>squads.map((_,i)=>option(String(i+1),`City Reinforcement ${i+1}`,chosen)).join('');
 const typeFields={inf:'Infantry',cav:'Cavalry',arc:'Archers'};
 let current=null;
@@ -53,6 +83,7 @@ function readData(profileId){
    obj.hq=[0,1].map(i=>({...blankHQ(),...(stored.hq?.[i]||{})}));
  }}catch(err){}
  obj.marches=String(clamp(n(obj.marches)||6,1,7));
+ normalizeAssignedHeroes(obj);
  return obj;
 }
 function save(){try{const all=JSON.parse(localStorage.getItem(STORAGE)||'{}');all[current.id]=current.data;localStorage.setItem(STORAGE,JSON.stringify(all));}catch(err){/* local storage may be disabled */}}
@@ -180,19 +211,20 @@ function compute(data){
  return {marches,squads,caps,alloc,normalCapacity,configuredCapacity,normalCaps,wanted,deployed,left,basicNeed,missing,nonVerified,hq,...remaining};
 }
 const H=(title,desc='',subtitle='')=>`<div class="vk-section-title"><span class="vk-triangle">▼</span><div><h2>${title}</h2>${desc?`<p>${desc}</p>`:''}${subtitle?`<small>${subtitle}</small>`:''}</div></div>`;
-function choice(type,selected){return heroChoice(selected,type);}
+function choice(data,type,selected,except){return heroChoice(data,selected,type,except);}
 function squadInputs(data,idx){
  const s=data.squads[idx];const slots=clamp(n(s.slots),0,3);
  return `<article class="vk-squad-card"><h3>City Reinforcement ${idx+1}</h3><div class="vk-form-row"><label>Destination city / player (optional)<input type="text" maxlength="60" data-vk="squads.${idx}.destination" placeholder="Player or city" value="${e(s.destination)}"></label><label>Number of heroes<select data-vk="squads.${idx}.slots">${[0,1,2,3].map(i=>option(i,`${i} ${i===1?'hero':'heroes'}`,s.slots)).join('')}</select></label></div>
- ${Array.from({length:slots},(_,slot)=>`<div class="vk-hero-line"><label>Hero ${slot+1}<select data-vk="squads.${idx}.heroes.${slot}.name">${choice('',s.heroes[slot].name)}</select></label><label>Hero level (1–80)<input type="number" min="1" max="80" data-vk="squads.${idx}.heroes.${slot}.level" placeholder="Set level" value="${e(s.heroes[slot].level)}"></label></div>`).join('')}
+ ${Array.from({length:slots},(_,slot)=>`<div class="vk-hero-line"><label>Hero ${slot+1}<select data-vk="squads.${idx}.heroes.${slot}.name">${choice(data,'',s.heroes[slot].name,`squads.${idx}.heroes.${slot}.name`)}</select></label><label>Hero level (1–80)<select data-vk="squads.${idx}.heroes.${slot}.level">${heroLevelChoice(s.heroes[slot].level)}</select></label></div>`).join('')}
  <label class="vk-wide-field">Exact observed march capacity (optional)<input type="number" min="0" data-vk="squads.${idx}.exact" placeholder="Overrides estimated capacity" value="${e(s.exact)}"></label>
  <div class="vk-inline-result" id="vk-cap-${idx}"></div>
  </article>`;
 }
 function heroPanel(data){return `<section class="content-card vk-panel">${H('Own city defence — locked heroes','Reserve up to three heroes for the Guard Station. These heroes do not use your selected reinforcement march slots.')}
  <div class="vk-banner"><strong>KingShot terminology:</strong> Guard Station heroes defend your city. This is distinct from NPC barricade defence. Reserved heroes cannot also be selected in reinforcement marches.</div>
- <div class="vk-form-row vk-three">${TYPES.map(type=>`<label>${type} hero<select data-vk="guard.${type}">${choice(type,data.guard[type])}</select></label>`).join('')}</div>
- <label class="vk-wide-field">City defence notes (optional)<input data-vk="guardNotes" type="text" maxlength="220" placeholder="Any instructions for your own city" value="${e(data.guardNotes)}"></label></section>`;}
+ <div class="vk-form-row vk-three">${TYPES.map(type=>`<label>${type} hero<select data-vk="guard.${type}">${choice(data,type,data.guard[type],`guard.${type}`)}</select></label>`).join('')}</div>
+ <p class="vk-footnote">${HEROS.length-usedHeroes(data).size} unassigned heroes available. Choosing a city defender reserves them across all reinforcement squads. Clear a selection to make that hero available again.</p>
+  <label class="vk-wide-field">City defence notes (optional)<input data-vk="guardNotes" type="text" maxlength="220" placeholder="Any instructions for your own city" value="${e(data.guardNotes)}"></label></section>`;}
 function capacityPanel(data){return `<section class="content-card vk-panel">
  ${H('Deployment capacity & optional buffs','Set your base capacity and the marches you actually have available. The planner calculates hero bonuses separately for each squad.')}
  <div class="vk-form-row"><label>Base capacity (excluding hero level bonuses)<input data-vk="base" type="number" inputmode="numeric" min="0" placeholder="Your deployment capacity before hero bonuses" value="${e(data.base)}"></label><label>Available march slots<select data-vk="marches">${Array.from({length:7},(_,i)=>option(i+1,`${i+1} ${i===0?'march':'marches'}`,data.marches)).join('')}</select></label></div>
@@ -224,6 +256,7 @@ function squadSelectPanel(data){
  const m=clamp(n(data.marches)||6,1,7);
  activeSquad=clamp(activeSquad,0,m-1);
  return `<section class="content-card vk-panel">${H('Build your reinforcement squads','Pick a march below. Each squad has its own heroes, levels, destination and optional exact-capacity override.')}
+ <div class="vk-advice"><span>✓</span><p><strong>${HEROS.length-usedHeroes(data).size} heroes currently unassigned.</strong> Heroes used in your Guard Station or other squads are hidden from these lists. Remove a selection to free a hero up.</p></div>
  <div class="vk-squad-select" aria-label="Choose city reinforcement squad">${Array.from({length:m},(_,i)=>`<button type="button" data-vka="squad" data-id="${i}" aria-pressed="${activeSquad===i}" class="vk-squad-pill ${activeSquad===i?'is-current':''}"><span>Squad ${i+1}</span><small>${selectedHeroNames(data.squads[i]).length} / ${n(data.squads[i].slots)} heroes</small></button>`).join('')}</div>
  <div class="vk-editor-caption"><span class="vk-step-dot">${String(activeSquad+1).padStart(2,'0')}</span><div><strong>Editing city squad ${activeSquad+1}</strong><small>Choose up to three heroes, with different troop types</small></div></div>
  <div class="vk-squads vk-solo-squad">${squadInputs(data,activeSquad)}</div>
@@ -284,6 +317,10 @@ function updatePath(path,value){const parts=path.split('.');let ref=current.data
 function listener(e){const el=e.target;if(!current||!current.root.contains(el))return;const key=el.dataset.vk;if(!key)return;
  const value=el.type==='checkbox'?el.checked:el.value;
  updatePath(key,value);
+ if(key.startsWith('guard.')||key==='marches'||/^squads\.\d+\.(heroes\.\d+\.name|slots)$/.test(key)){
+  normalizeAssignedHeroes(current.data);
+  save();
+ }
  if(el.tagName==='SELECT'||el.type==='checkbox'){renderForm();return;}
  refresh();
 }
