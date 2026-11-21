@@ -265,16 +265,22 @@
     document.querySelectorAll('.emoji-cat').forEach(button=>button.classList.toggle('selected',button.dataset.cat===emojiCategory));
   }
   async function copyCharacter(ch){try{await navigator.clipboard.writeText(ch);toast('Unicode character copied.');}catch(e){toast('Copy not available in this browser. Use Insert instead.');}}
-  function insertEmoji(ch){const box=$('messageBody');if(!box)return;const a=box.selectionStart??box.value.length,b=box.selectionEnd??a;box.setRangeText(ch,a,b,'end');box.focus();updateCounts();}
+  function insertEmoji(ch){const box=$('messageBody');if(box){const a=box.selectionStart??box.value.length,b=box.selectionEnd??a;box.setRangeText(ch,a,b,'end');box.focus();messageBuffer=box.value;}else{messageBuffer=getMessageText()+ch;toast('Unicode icon inserted into draft.');}updateCounts();}
   function settingsPage(){return `${header('Settings','Keep control of saved profiles and move your information between websites.')}<div class="wide-grid"><section class="content-card"><span class="eyebrow">YOUR DATA</span><h2>Backup & restore</h2><p>Export profiles, message drafts, Viking setup inputs and appointment notes. You can also import profile backups exported from Floot.</p><div class="data-controls"><button class="button button-primary" data-action="export-data">↓ Export Backup</button><button class="button button-ghost" data-action="import-data">↑ Import Backup</button><input id="backupFile" type="file" accept=".json,application/json"></div></section><section class="content-card"><h2>Storage & privacy</h2><p>Profiles, drafts and tool setups are stored in this browser only. Other players create their own profiles. To migrate from Floot, export a backup on the old site and import it here.</p><p class="muted" style="font-size:12px">A new website has separate browser storage; old Floot profiles cannot appear automatically. Export a backup first.</p></section></div>`;}
   function helpPage(){return `${header('Help & FAQ','Quick answers about how this early version works.')}<section class="content-card faq"><details open><summary>Which calculators are available?</summary><p>UTC conversion, Message Creator and the Kingshot Viking Vengeance squad planner work now. The Viking planner estimates hero level capacity and supports exact in-game overrides. Bear Trap and KvK calculators are next.</p></details><details><summary>Does my profile save automatically?</summary><p>Yes. Profile changes save to local browser storage as soon as you submit the profile form. Draft messages save when you press Save Draft.</p></details><details><summary>Can I use the same profile on an iPhone and a computer?</summary><p>Not automatically in this release. Export and import your backup through Settings; optional cloud accounts can be added later.</p></details><details><summary>Is Kingshot Tools official?</summary><p>No. It is an independent, fan-made community toolkit, not affiliated with or endorsed by the game publisher.</p></details></section>`;}
   function currentPage(){const v=(location.hash||'#dashboard').replace(/^#/,'');return ['dashboard','profile','settings','help',...TOOLS.map(t=>t.id)].includes(v)?v:'dashboard';}
-  function render(){const page=currentPage();$('appMain').innerHTML=page==='dashboard'?dashboard():page==='profile'?profilePage():page==='settings'?settingsPage():page==='help'?helpPage():page==='utc'?utcPage():page==='message'?messagePage():gameTool(TOOLS.find(t=>t.id===page));
+  function render(){const page=currentPage();
+    if(page!==previouslyRendered){
+      if(page==='utc')otherToolSteps.utc=0;
+      if(page==='message'){otherToolSteps.message=0;messageBuffer=null;}
+      previouslyRendered=page;
+    }
+    $('appMain').innerHTML=page==='dashboard'?dashboard():page==='profile'?profilePage():page==='settings'?settingsPage():page==='help'?helpPage():page==='utc'?utcPage():page==='message'?messagePage():gameTool(TOOLS.find(t=>t.id===page));
     document.querySelectorAll('[data-nav]').forEach(link=>{const active=link.dataset.nav===page;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
     document.querySelector('.profile-switch-name').textContent=hasProfile()?'My Profiles':'Create Profile';
     const top=$('headerAvatar');top.setAttribute('aria-label',hasProfile()?'Edit player profile':'Create player profile');top.innerHTML=profile().avatar?`<img src="${profile().avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Profile avatar">`:'♛';
-    if(page==='utc'){const now=new Date();$('utcDate').value=now.toISOString().slice(0,10);$('utcTime').value=now.toISOString().slice(11,16);convertUTC();}
-    if(page==='message'){updateCounts();emojiCategory='All';refreshEmojis();}
+    if(page==='utc'&&$('utcDate'))convertUTC();
+    if(page==='message'){updateCounts();if($('emojiResults'))refreshEmojis();}
     if(page==='viking'&&window.KingshotVikings){window.KingshotVikings.mount($('viking-planner-root'),profile().id);}
     renderProfilesDropdown();
   }
@@ -293,15 +299,28 @@
   function toggleFav(id){if(!hasProfile()){openProfile(true);toast('Create a profile to save tools.');return;}const p=profile();if(!p.favorites) p.favorites=[];p.favorites=p.favorites.includes(id)?p.favorites.filter(x=>x!==id):[...p.favorites,id];save();render();toast('Saved tool preferences.');}
   function deleteProfile(){if(state.profiles.length<=1){toast('Keep at least one profile.');return;}
     if(confirm(`Delete profile "${profile().name}" and its saved data on this device?`)){state.profiles=state.profiles.filter(p=>p.id!==state.currentId);state.currentId=state.profiles[0].id;save();render();toast('Profile deleted.');}}
-  function convertUTC(){const date=$('utcDate')?.value,time=$('utcTime')?.value;if(!date||!time){toast('Choose a date and time first.');return;}
+  function convertUTC(){const date=$('utcDate')?.value,time=$('utcTime')?.value;if(!date||!time){if($('utcDate')||$('utcTime'))toast('Choose a date and time first.');return;}
+     utcSelection={date,time};
     const instant=new Date(`${date}T${time}:00Z`);if(Number.isNaN(instant.valueOf())){toast('Invalid date or time.');return;}
     const zones=[['UTC','UTC'],['United Kingdom','Europe/London'],['Italy / Central Europe','Europe/Rome'],['US Eastern','America/New_York'],['US Pacific','America/Los_Angeles'],['Saudi Arabia','Asia/Riyadh'],['United Arab Emirates','Asia/Dubai'],['Sydney, Australia','Australia/Sydney']];
     $('timeResults').innerHTML=zones.map(([name,zone])=>{const f=new Intl.DateTimeFormat('en-GB',{timeZone:zone,weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(instant);return `<div class="time-result"><small>${esc(name)}</small><strong>${esc(f)}</strong></div>`;}).join('');}
-  function updateCounts(){const box=$('messageBody');if(!box)return;const value=box.value;const lines=value?value.split(/\r?\n/).length:0;const c=$('characterCount'),l=$('lineCount');c.textContent=`${value.length} / 512 characters`;l.textContent=`${lines} / 10 lines`;c.className=value.length>512?'bad':'good';l.className=lines>10?'bad':'good';}
+  function updateCounts(){
+    const box=$('messageBody');if(box)messageBuffer=box.value;
+    const value=getMessageText(),lines=value?value.split(/\r?\n/).length:0;
+    const c=$('characterCount'),l=$('lineCount');
+    if(c){c.textContent=value.length+' / 512 characters';c.className=value.length>512?'bad':'good';}
+    if(l){l.textContent=lines+' / 10 lines';l.className=lines>10?'bad':'good';}
+    const mc=$('flowChars'),ml=$('flowLines');
+    if(mc)mc.textContent=value.length+' / 512';
+    if(ml)ml.textContent=lines+' / 10';
+    const echo=$('emojiDraftPreview'),preview=$('messagePreview');
+    if(echo)echo.textContent=value||'Your message is empty. You can still select an icon to begin.';
+    if(preview)preview.textContent=value||'No message written yet. Return to Compose to create one.';
+  }
   const TEMPLATES={blank:'',event:'ALLIANCE EVENT REMINDER\nEvent: [Event name]\nDate: [Day / Date]\nTime: [00:00 UTC]\nPlease be ready a few minutes early.',notice:'ALLIANCE ANNOUNCEMENT\n\n[Your announcement]\n\nPlease contact R4/R5 with questions.',rules:'ALLIANCE RULES REMINDER\n\n[State the applicable rule clearly]\n\nPlease contact leadership before retaliating.',battle:'EVENT BATTLE PLAN\nObjective: [Target]\nSquad A: [Task]\nSquad B: [Task]\nBackup: [Task]\nFollow R4/R5 instructions.'};
-  function saveDraft(){const box=$('messageBody');if(!box)return;if(!hasProfile()){openProfile(true);toast('Create a profile to save drafts.');return;}profile().draft=box.value;save();toast('Draft saved to '+profile().name+'.');}
-  async function copyMessage(){const box=$('messageBody');if(!box?.value.trim()){toast('Write a message first.');return;}
-    try{await navigator.clipboard.writeText(box.value);toast('Message copied.');}catch(e){box.select();try{document.execCommand('copy');toast('Message copied.');}catch(err){toast('Use Select All, then Copy.');}}}
+  function saveDraft(){if(!hasProfile()){openProfile(true);toast('Create a profile to save drafts.');return;}profile().draft=getMessageText();save();toast('Draft saved to '+profile().name+'.');}
+  async function copyMessage(){const value=getMessageText();if(!value.trim()){toast('Write a message first.');return;}
+    try{await navigator.clipboard.writeText(value);toast('Message copied.');}catch(e){const box=$('messageBody');if(box){box.select();try{document.execCommand('copy');toast('Message copied.');return;}catch(err){}}window.prompt('Copy your alliance message',value);}}
   function getJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return {};}}
   function exportData(){
     const backup={format:'ghosts-kingshot-tools-v2',exported:new Date().toISOString(),profiles:state.profiles,currentId:state.currentId,viking:getJson(CAP_KEY),appointments:getJson(APT_KEY),vikingFull:getJson('kingshot-viking-full-v2')};
