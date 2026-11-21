@@ -195,7 +195,7 @@ function heroPanel(data){return `<section class="content-card vk-panel">${H('Own
  <label class="vk-wide-field">City defence notes (optional)<input data-vk="guardNotes" type="text" maxlength="220" placeholder="Any instructions for your own city" value="${e(data.guardNotes)}"></label></section>`;}
 function capacityPanel(data){return `<section class="content-card vk-panel">
  ${H('Deployment capacity & optional buffs','Set your base capacity and the marches you actually have available. The planner calculates hero bonuses separately for each squad.')}
- <div class="vk-form-row"><label>Base capacity (excluding hero level bonuses)<input data-vk="base" type="number" inputmode="numeric" min="0" placeholder="Your Command Center + research capacity" value="${e(data.base)}"></label><label>Available march slots<select data-vk="marches">${Array.from({length:7},(_,i)=>option(i+1,`${i+1} ${i===0?'march':'marches'}`,data.marches)).join('')}</select></label></div>
+ <div class="vk-form-row"><label>Base capacity (excluding hero level bonuses)<input data-vk="base" type="number" inputmode="numeric" min="0" placeholder="Your deployment capacity before hero bonuses" value="${e(data.base)}"></label><label>Available march slots<select data-vk="marches">${Array.from({length:7},(_,i)=>option(i+1,`${i+1} ${i===0?'march':'marches'}`,data.marches)).join('')}</select></label></div>
  <p class="vk-footnote">Choose your actual unlocked march queue count (normally up to six; seven is available as an extra planning slot). If the game shows a different capacity, enter it under that squad's exact-capacity override.</p>
  <div class="vk-advice"><span>💡</span><p><strong>Only use deployment buffs if needed.</strong> Leave all three buffs on <b>None</b> unless your normal marches cannot get all your Infantry and Cavalry out of the city.</p></div>
  <h3 class="vk-minor-heading">⚡ Optional buffs</h3><div class="vk-form-row vk-three">
@@ -229,7 +229,7 @@ function squadSelectPanel(data){
  <div class="vk-squads vk-solo-squad">${squadInputs(data,activeSquad)}</div>
  <div class="vk-editor-footer"><span>${m} city marches available</span>${activeSquad<m-1?`<button type="button" data-vka="squad" data-id="${activeSquad+1}" class="vk-quiet-btn">Edit squad ${activeSquad+2} →</button>`:'<span>Last squad</span>'}</div></section>`;
 }
-function dashboardStrip(){return `<div class="vk-command-header"><div class="vk-command-text"><span class="vk-eyebrow">VIKING VENGEANCE / SQUAD CONTROL</span><h2>Command Deck</h2><p>Build your defence plan one decision at a time. Your choices save automatically to this browser.</p></div><span class="vk-command-seal" aria-hidden="true">♜</span></div>
+function dashboardStrip(){return `<div class="vk-command-header"><div class="vk-command-text"><span class="vk-eyebrow">VIKING VENGEANCE / SQUAD CONTROL</span><h2>Deployment Capacity</h2><p>Build your defence plan one decision at a time. Your choices save automatically to this browser.</p></div><span class="vk-command-seal" aria-hidden="true">♜</span></div>
  <div class="vk-command-metrics" aria-label="Live Viking planning summary"><div><span>Troops available</span><strong id="vk-live-troops">—</strong></div><div><span>Troops deployed</span><strong id="vk-live-deployed">—</strong></div><div><span>Not assigned</span><strong id="vk-live-left">—</strong></div></div>`;}
 function renderForm(){const data=current.data,root=current.root;
  activeStep=clamp(activeStep,0,STEPS.length-1);
