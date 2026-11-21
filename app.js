@@ -88,6 +88,7 @@
   // Shared step navigation for the working Kingshot tools.
   const otherToolSteps={utc:0,message:0};
   let utcSelection={date:'',time:''};
+  let utcToolView='converter';
   let messageBuffer=null;
   let previouslyRendered='';
   function flowWorkspace(tool,heading,kicker,intro,seal,steps,body,summary){
@@ -168,19 +169,23 @@
   function profilePage(){const p=profile();return `${header('Player Profile','Create, switch and save profiles for different Kingshot accounts.')}<div class="profile-full">${profilePanel(p)}</div><div class="wide-grid"><div class="content-card"><span class="eyebrow">YOUR KINGDOM ACCOUNTS</span><h2>Saved profiles</h2><div class="saved-list">${!hasProfile()?'<p>No profiles yet. Create yours to begin.</p>':''}${state.profiles.map(x=>`<button type="button" data-action="switch-profile" data-id="${esc(x.id)}">${x.id===state.currentId?'✓ ':''}♛ ${esc(x.name)} ${x.kingdom?' · #'+esc(x.kingdom):''}</button>`).join('')}</div><div class="form-actions"><button class="button button-primary" data-action="new-profile">＋ New Profile</button>${state.profiles.length>1?'<button class="button button-ghost" data-action="delete-profile">Delete Current Profile</button>':''}</div></div><div class="content-card"><h2>Saved on your device</h2><p>Your player details and message drafts stay in this browser. At this stage there is no account sign-in or cross-device sync.</p><div class="info-strip">You can export a backup under <a href="#settings" data-link style="font-weight:900;text-decoration:underline">Settings</a> to move your profiles to another device.</div></div></div>`;}
   function utcPage(){
     if(!utcSelection.date){const now=new Date().toISOString();utcSelection={date:now.slice(0,10),time:now.slice(11,16)};}
-    const steps=[
-      {title:'Time Converter',desc:'Pick a UTC event time and see it across alliance time zones.'},
-      {title:'Minister Applications',desc:'Find your next minister application or check time in both local time and UTC.'},
-      {title:'Appointments',desc:'Keep personal appointment notes and copy your UTC schedule.'}
+    const views=[
+      {id:'converter',icon:'◷',title:'UTC Converter',description:'Event times around the world'},
+      {id:'minister',icon:'♛',title:'Minister Timing',description:'Applications and troop training'},
+      {id:'appointments',icon:'▤',title:'Appointment Notes',description:'Your saved kingdom schedule'}
     ];
-    const stage=otherToolSteps.utc===0?
-      '<section class="content-card ks-utc-card"><span class="eyebrow">EVENT TIME PLANNER</span><h2>Convert UTC event times</h2><p>All regions adjust for their local daylight-saving dates.</p><div class="form-grid"><label>UTC date<input type="date" id="utcDate" required value="'+esc(utcSelection.date)+'"></label><label>UTC time<input type="time" id="utcTime" required value="'+esc(utcSelection.time)+'"></label></div><div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>':
-      otherToolSteps.utc===1?
-      '<div id="minister-planner-root" data-profile="'+esc(profile().id)+'"><section class="content-card"><h2>Minister Application Planner</h2><p>Loading your local and UTC appointment planning times…</p></section></div>':
+    const stage=utcToolView==='converter'?
+      '<section class="content-card ks-utc-card th-panel"><div class="th-panel-heading"><span class="th-panel-mark">◷</span><div><span class="eyebrow">EVENT TIME CONVERSION</span><h2>Convert a UTC event time</h2><p>Pick an event date and time to compare alliance regions, including daylight-saving changes.</p></div></div><div class="form-grid"><label>UTC event date<input type="date" id="utcDate" value="'+esc(utcSelection.date)+'" required></label><label>UTC event time<input type="time" id="utcTime" value="'+esc(utcSelection.time)+'" required></label></div><div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>':
+      utcToolView==='minister'?
+      '<div id="minister-planner-root" data-profile="'+esc(profile().id)+'"><section class="content-card"><h2>Minister Application Planner</h2><p>Loading local and UTC appointment timing…</p></section></div>':
       appointmentsPanel();
-    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 3</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong id="flowAppointments">'+appointments().length+' saved</strong></div>';
-    return header('UTC Time Converter','Convert alliance times, calculate minister applications and organise your appointment notes.')+
-      flowWorkspace('utc','Time & Minister Planner','UTC TIME CONVERTER / MINISTER SCHEDULES','One place for UTC conversions, minister applications and appointment notes.','◷',steps,stage,summary);
+    let clock='—',zone='UTC';
+    try{clock=new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());zone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(err){}
+    return header('UTC Time Converter','Convert alliance times, calculate minister application times and keep kingdom appointment notes.')+
+      '<div class="th-hub"><div class="th-hero"><div class="th-hero-copy"><span class="th-eyebrow">KINGSHOT · ALLIANCE TIME TOOLS</span><h2>Time Hub</h2><p>Times, minister appointments and training schedules. Everything together, without extra steps.</p></div>'+
+      '<div class="th-utc-clock"><small>CURRENT SERVER TIME</small><strong>'+esc(clock)+'</strong><span>UTC · 24-hour clock</span></div></div>'+
+      '<nav class="th-switcher" aria-label="Choose time tool">'+views.map(v=>'<button type="button" class="th-switch '+(utcToolView===v.id?'is-selected':'')+'" data-action="utc-view" data-view="'+v.id+'" aria-pressed="'+(utcToolView===v.id)+'"><span class="th-switch-icon">'+v.icon+'</span><span class="th-switch-copy"><strong>'+esc(v.title)+'</strong><small>'+esc(v.description)+'</small></span></button>').join('')+'</nav>'+
+      '<div class="th-content">'+stage+'</div><p class="th-footer-note">Time zone detected: '+esc(zone)+'. Minister application times are planning estimates, not live Kingshot reservations.</p></div>';
   }
   function allAppointments(){try{return JSON.parse(localStorage.getItem(APT_KEY)||'{}')||{};}catch(e){return {};}}
   function appointments(){const arr=allAppointments()[profile().id];return Array.isArray(arr)?arr:[];}
@@ -273,7 +278,7 @@
   function currentPage(){const v=(location.hash||'#dashboard').replace(/^#/,'');return ['dashboard','profile','settings','help',...TOOLS.map(t=>t.id)].includes(v)?v:'dashboard';}
   function render(){const page=currentPage();
     if(page!==previouslyRendered){
-      if(page==='utc')otherToolSteps.utc=0;
+      if(page==='utc')utcToolView='converter';
       if(page==='message'){otherToolSteps.message=0;messageBuffer=null;}
       previouslyRendered=page;
     }
@@ -353,10 +358,15 @@
     const link=e.target.closest('[data-link]');if(link){closeMenu();showDropdown(false);}
     const btn=e.target.closest('[data-action]');if(!btn)return;
     const action=btn.dataset.action;
+    if(action==='utc-view'){
+      if($('utcDate')&&$('utcTime'))utcSelection={date:$('utcDate').value,time:$('utcTime').value};
+      const view=btn.dataset.view;
+      if(['converter','minister','appointments'].includes(view)){utcToolView=view;render();}
+      return;
+    }
     if(action==='flow-step'){
       const tool=btn.dataset.tool;
-      if(tool==='utc'||tool==='message'){
-        if(tool==='utc'&&$('utcDate')&&$('utcTime'))utcSelection={date:$('utcDate').value,time:$('utcTime').value};
+      if(tool==='message'){
         if(tool==='message'&&$('messageBody'))messageBuffer=$('messageBody').value;
         otherToolSteps[tool]=Math.max(0,Math.min(2,Number(btn.dataset.index)||0));
         render();window.scrollTo({top:0,behavior:'smooth'});
