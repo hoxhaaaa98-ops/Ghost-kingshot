@@ -169,16 +169,18 @@
   function utcPage(){
     if(!utcSelection.date){const now=new Date().toISOString();utcSelection={date:now.slice(0,10),time:now.slice(11,16)};}
     const steps=[
-      {title:'Time Converter',desc:'Pick the UTC event time and see it in alliance time zones.'},
+      {title:'Time Converter',desc:'Pick a UTC event time and see it across alliance time zones.'},
+      {title:'Minister Applications',desc:'Find your next minister application or check time in both local time and UTC.'},
       {title:'Appointments',desc:'Keep personal appointment notes and copy your UTC schedule.'}
     ];
     const stage=otherToolSteps.utc===0?
       '<section class="content-card ks-utc-card"><span class="eyebrow">EVENT TIME PLANNER</span><h2>Convert UTC event times</h2><p>All regions adjust for their local daylight-saving dates.</p><div class="form-grid"><label>UTC date<input type="date" id="utcDate" required value="'+esc(utcSelection.date)+'"></label><label>UTC time<input type="time" id="utcTime" required value="'+esc(utcSelection.time)+'"></label></div><div class="form-actions"><button type="button" class="button button-primary" data-action="convert-time">Convert times →</button><button type="button" class="button button-ghost" data-action="utc-now">Use current UTC</button></div><div id="timeResults" class="results-grid" aria-live="polite"></div></section>':
+      otherToolSteps.utc===1?
+      '<div id="minister-planner-root" data-profile="'+esc(profile().id)+'"><section class="content-card"><h2>Minister Application Planner</h2><p>Loading your local and UTC appointment planning times…</p></section></div>':
       appointmentsPanel();
-    const times=otherToolSteps.utc===0?['8 regions','Live conversion','DST aware']:['Schedule','Saved on device','UTC times'];
-    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 2</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong id="flowAppointments">'+appointments().length+' saved</strong></div>';
-    return header('UTC Time Converter','Convert alliance times and keep appointment notes in the same easy step-by-step view.')+
-      flowWorkspace('utc','Event Time Planner','UTC TIME CONVERTER / EVENT PLANNING','Convert event times, then organise your kingdom appointment schedule.','◷',steps,stage,summary);
+    const summary='<div><span>Current step</span><strong>'+(otherToolSteps.utc+1)+' / 3</strong></div><div><span>Time zones</span><strong>8 regions</strong></div><div><span>Appointments</span><strong id="flowAppointments">'+appointments().length+' saved</strong></div>';
+    return header('UTC Time Converter','Convert alliance times, calculate minister applications and organise your appointment notes.')+
+      flowWorkspace('utc','Time & Minister Planner','UTC TIME CONVERTER / MINISTER SCHEDULES','One place for UTC conversions, minister applications and appointment notes.','◷',steps,stage,summary);
   }
   function allAppointments(){try{return JSON.parse(localStorage.getItem(APT_KEY)||'{}')||{};}catch(e){return {};}}
   function appointments(){const arr=allAppointments()[profile().id];return Array.isArray(arr)?arr:[];}
@@ -266,7 +268,7 @@
   }
   async function copyCharacter(ch){try{await navigator.clipboard.writeText(ch);toast('Unicode character copied.');}catch(e){toast('Copy not available in this browser. Use Insert instead.');}}
   function insertEmoji(ch){const box=$('messageBody');if(box){const a=box.selectionStart??box.value.length,b=box.selectionEnd??a;box.setRangeText(ch,a,b,'end');box.focus();messageBuffer=box.value;}else{messageBuffer=getMessageText()+ch;toast('Unicode icon inserted into draft.');}updateCounts();}
-  function settingsPage(){return `${header('Settings','Keep control of saved profiles and move your information between websites.')}<div class="wide-grid"><section class="content-card"><span class="eyebrow">YOUR DATA</span><h2>Backup & restore</h2><p>Export profiles, message drafts, Viking setup inputs and appointment notes. You can also import profile backups exported from Floot.</p><div class="data-controls"><button class="button button-primary" data-action="export-data">↓ Export Backup</button><button class="button button-ghost" data-action="import-data">↑ Import Backup</button><input id="backupFile" type="file" accept=".json,application/json"></div></section><section class="content-card"><h2>Storage & privacy</h2><p>Profiles, drafts and tool setups are stored in this browser only. Other players create their own profiles. To migrate from Floot, export a backup on the old site and import it here.</p><p class="muted" style="font-size:12px">A new website has separate browser storage; old Floot profiles cannot appear automatically. Export a backup first.</p></section></div>`;}
+  function settingsPage(){return `${header('Settings','Keep control of saved profiles and move your information between websites.')}<div class="wide-grid"><section class="content-card"><span class="eyebrow">YOUR DATA</span><h2>Backup & restore</h2><p>Export profiles, message drafts, Viking setups, minister application preferences and appointment notes. You can also import profile backups exported from Floot.</p><div class="data-controls"><button class="button button-primary" data-action="export-data">↓ Export Backup</button><button class="button button-ghost" data-action="import-data">↑ Import Backup</button><input id="backupFile" type="file" accept=".json,application/json"></div></section><section class="content-card"><h2>Storage & privacy</h2><p>Profiles, drafts and tool setups are stored in this browser only. Other players create their own profiles. To migrate from Floot, export a backup on the old site and import it here.</p><p class="muted" style="font-size:12px">A new website has separate browser storage; old Floot profiles cannot appear automatically. Export a backup first.</p></section></div>`;}
   function helpPage(){return `${header('Help & FAQ','Quick answers about how this early version works.')}<section class="content-card faq"><details open><summary>Which calculators are available?</summary><p>UTC conversion, Message Creator and the Kingshot Viking Vengeance squad planner work now. The Viking planner estimates hero level capacity and supports exact in-game overrides. Bear Trap and KvK calculators are next.</p></details><details><summary>Does my profile save automatically?</summary><p>Yes. Profile changes save to local browser storage as soon as you submit the profile form. Draft messages save when you press Save Draft.</p></details><details><summary>Can I use the same profile on an iPhone and a computer?</summary><p>Not automatically in this release. Export and import your backup through Settings; optional cloud accounts can be added later.</p></details><details><summary>Is Kingshot Tools official?</summary><p>No. It is an independent, fan-made community toolkit, not affiliated with or endorsed by the game publisher.</p></details></section>`;}
   function currentPage(){const v=(location.hash||'#dashboard').replace(/^#/,'');return ['dashboard','profile','settings','help',...TOOLS.map(t=>t.id)].includes(v)?v:'dashboard';}
   function render(){const page=currentPage();
@@ -280,6 +282,7 @@
     document.querySelector('.profile-switch-name').textContent=hasProfile()?'My Profiles':'Create Profile';
     const top=$('headerAvatar');top.setAttribute('aria-label',hasProfile()?'Edit player profile':'Create player profile');top.innerHTML=profile().avatar?`<img src="${profile().avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Profile avatar">`:'♛';
     if(page==='utc'&&$('utcDate'))convertUTC();
+    if(page==='utc'&&$('minister-planner-root')&&window.KingshotMinisterPlanner)window.KingshotMinisterPlanner.mount($('minister-planner-root'),profile().id);
     if(page==='message'){updateCounts();if($('emojiResults'))refreshEmojis();}
     if(page==='viking'&&window.KingshotVikings){window.KingshotVikings.mount($('viking-planner-root'),profile().id);}
     renderProfilesDropdown();
@@ -323,7 +326,7 @@
     try{await navigator.clipboard.writeText(value);toast('Message copied.');}catch(e){const box=$('messageBody');if(box){box.select();try{document.execCommand('copy');toast('Message copied.');return;}catch(err){}}window.prompt('Copy your alliance message',value);}}
   function getJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return {};}}
   function exportData(){
-    const backup={format:'ghosts-kingshot-tools-v2',exported:new Date().toISOString(),profiles:state.profiles,currentId:state.currentId,viking:getJson(CAP_KEY),appointments:getJson(APT_KEY),vikingFull:getJson('kingshot-viking-full-v2')};
+    const backup={format:'ghosts-kingshot-tools-v2',exported:new Date().toISOString(),profiles:state.profiles,currentId:state.currentId,viking:getJson(CAP_KEY),appointments:getJson(APT_KEY),minister:getJson('kingshot-minister-planner-v1'),vikingFull:getJson('kingshot-viking-full-v2')};
     const file=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='ghosts-kingshot-tools-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup downloaded.');
   }
@@ -339,6 +342,7 @@
       if(obj.format==='ghosts-kingshot-tools-v2'){
         if(obj.viking&&typeof obj.viking==='object')localStorage.setItem(CAP_KEY,JSON.stringify(obj.viking));
         if(obj.appointments&&typeof obj.appointments==='object')localStorage.setItem(APT_KEY,JSON.stringify(obj.appointments));
+        if(obj.minister&&typeof obj.minister==='object')localStorage.setItem('kingshot-minister-planner-v1',JSON.stringify(obj.minister));
         if(obj.vikingFull&&typeof obj.vikingFull==='object')localStorage.setItem('kingshot-viking-full-v2',JSON.stringify(obj.vikingFull));
       }
       save();render();toast('Backup imported.');
@@ -354,7 +358,7 @@
       if(tool==='utc'||tool==='message'){
         if(tool==='utc'&&$('utcDate')&&$('utcTime'))utcSelection={date:$('utcDate').value,time:$('utcTime').value};
         if(tool==='message'&&$('messageBody'))messageBuffer=$('messageBody').value;
-        otherToolSteps[tool]=Math.max(0,Math.min(tool==='utc'?1:2,Number(btn.dataset.index)||0));
+        otherToolSteps[tool]=Math.max(0,Math.min(2,Number(btn.dataset.index)||0));
         render();window.scrollTo({top:0,behavior:'smooth'});
       }
       return;
