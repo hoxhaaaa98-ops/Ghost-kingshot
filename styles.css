@@ -355,3 +355,38 @@ label{font-size:13px;font-weight:850;color:#294735;display:block}input:not([type
  .ms-metric:last-child{grid-column:1/-1}
  .ms-metric{min-height:77px}
 }
+
+
+/* Secret Kingshot emojis: visible alongside the Comms Studio editor */
+.ms-emoji-shortcuts{margin:17px 0 11px;padding:14px;background:linear-gradient(145deg,#e2f8e8,#f2fff6);border:2px solid #8ccc9e;border-radius:15px}
+.ms-emoji-shortcuts-title{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:5px 12px;margin-bottom:12px}
+.ms-emoji-shortcuts-title span{font-size:11px;font-weight:950;letter-spacing:1px;color:#14613a}
+.ms-emoji-shortcuts-title small{font-size:11px;color:#527f61}
+.ms-emoji-shortcuts-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.ms-emoji-quick{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-width:0;min-height:68px;padding:7px 2px;background:#fff;border:1px solid #b0d9bc;border-radius:12px;color:#174d32;cursor:pointer;transition:background .15s,transform .15s}
+.ms-emoji-quick:hover{background:#c5f5d3;transform:translateY(-2px);border-color:#46a767}
+.ms-emoji-quick:focus-visible{outline:3px solid #278652;outline-offset:2px}
+.ms-emoji-quick>span{font-size:24px;line-height:1.1}
+.ms-emoji-quick small{font-size:9px;font-weight:850;line-height:1.15;text-align:center;overflow-wrap:anywhere;color:#285d3d}
+.ms-compose .ms-vault-inline{margin:0 0 16px;border-radius:13px;border:1px solid #4a9c6b;box-shadow:none}
+.ms-compose .ms-vault-inline>summary{padding:12px 13px}
+.ms-compose .ms-vault-inline .ms-vault-symbol{height:30px;width:30px;border-radius:9px;font-size:18px}
+.ms-compose .ms-vault-inline>summary strong{font-size:13px}
+.ms-compose .ms-vault-inline>summary small{font-size:10px}
+.ms-compose .ms-vault-inline .ms-vault-content{padding:0 6px 8px}
+.ms-compose .ms-vault-inline .secret-emojis{padding:11px;border-radius:0 0 10px 10px}
+.ms-compose .ms-vault-inline .emoji-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:340px}
+.ms-compose .ms-vault-inline .emoji-item{padding:7px 5px;gap:5px}
+.ms-compose .ms-vault-inline .emoji-heading{gap:8px}
+.ms-compose .ms-vault-inline .emoji-heading h2{font-size:16px}
+@media(max-width:1100px){.ms-emoji-shortcuts-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.ms-emoji-shortcuts-row{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:600px){
+ .ms-emoji-shortcuts{padding:11px 9px;margin-top:12px}
+ .ms-emoji-shortcuts-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .ms-emoji-quick{min-height:57px;flex-direction:row;gap:6px;padding:5px}
+ .ms-emoji-quick>span{font-size:20px}
+ .ms-emoji-quick small{font-size:10px}
+ .ms-compose .ms-vault-inline .emoji-grid{grid-template-columns:1fr}
+ .ms-compose .ms-vault-inline>summary{gap:9px}
+}
