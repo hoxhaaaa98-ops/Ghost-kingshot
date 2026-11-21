@@ -247,7 +247,7 @@
           '<div class="ms-template-bar"><span>QUICK START</span><div class="ms-template-chips">'+quickTemplates.map(([value,label])=>'<button type="button" class="ms-template-chip" data-action="message-quick-template" data-template="'+value+'">'+label+'</button>').join('')+'</div></div>'+
           '<label class="ms-template-label">Or select a template<select id="messageTemplate"><option value="blank">Blank message</option><option value="event">Event Reminder</option><option value="notice">Alliance Announcement</option><option value="rules">Rules Reminder</option><option value="battle">Battle Plan</option></select></label>'+
           '<label class="ms-editor-label">MESSAGE CONTENT<textarea id="messageBody" maxlength="15000" spellcheck="true" placeholder="Write your alliance message here...">'+esc(draft)+'</textarea></label>'+
-          '<details class="ms-vault ms-vault-inline" id="msEmojiVault"><summary><span class="ms-vault-symbol">✧</span><span><strong>Choose an emoji or symbol</strong><small>Tap any icon to insert it into your message</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary><div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
+          '<details class="ms-vault ms-vault-inline" id="msEmojiVault"><summary><span class="ms-vault-symbol">✧</span><span><strong>Browse '+ALL_ICONS.length+' icons & symbols</strong><small>See item names, then tap to insert · No codes</small></span><span class="ms-vault-chevron" aria-hidden="true">⌄</span></summary><div class="ms-vault-content">'+secretEmojiPanel()+'</div></details>'+
           '<div class="ms-editor-footer"><div class="ms-limit-row"><span id="characterCount">0 / 512 characters</span><span id="lineCount">0 / 10 lines</span></div><p>Short-message limits may vary in Kingshot. The editor won’t erase anything if you go over.</p></div>'+
           '<div class="ms-actions"><button type="button" class="button button-primary ms-copy-main" data-action="copy-message">▣ Copy message</button><button type="button" class="button button-dark" data-action="save-draft">Save draft</button><button type="button" class="button button-ghost" data-action="clear-message">Clear</button></div>'+
         '</section>'+
@@ -263,10 +263,10 @@
       '</div>';
   }
   const EMOJI_SET=[
-    [0xE001,'Gem','Resources','💎'],[0xE012,'Bag of Gems','Resources','💎'],[0xE002,'Bread','Resources','🍞'],[0xE003,'Wood','Resources','🪵'],[0xE004,'Coal','Resources','⚫'],[0xE005,'Iron','Resources','⛓️'],[0xE006,'Gold','Resources','🪙'],[0xE010,'Truegold','Resources','✨'],
+    [0xE001,'Gem','Resources','💎'],[0xE012,'Bag of Gems','Resources','💎'],[0xE002,'Bread','Resources','🍞'],[0xE003,'Wood','Resources','🪵'],[0xE004,'Stone / Coal','Resources','🪨'],[0xE005,'Iron','Resources','⛓️'],[0xE006,'Gold','Resources','🪙'],[0xE010,'Truegold','Resources','✨'],
     [0xE007,'Hero XP','Heroes & Gear','📖'],[0xE019,'Hero Shard','Heroes & Gear','🧩'],[0xE016,'Forgehammer','Heroes & Gear','🔨'],[0xE047,'Mystery Badge','Heroes & Gear','🎖️'],
     [0xE013,'Building Speedup','Speedups','🏗️'],[0xE014,'Troop Speedup','Speedups','⚔️'],[0xE015,'Research Speedup','Speedups','🔬'],[0xE017,'General Speedup','Speedups','⏩'],
-    [0xE011,'Pearl of Enigma','Events & Coins','🔮'],[0xE020,'Halloween Candy','Events & Coins','🍬'],[0xE029,'Halloween Lollipop','Events & Coins','🍭'],[0xE021,'Energy Booster','Events & Coins','⚡'],[0xE022,'Hotdog','Events & Coins','🌭'],[0xE034,'Lucky Peach','Events & Coins','🍑'],[0xE040,'Energy Bar','Events & Coins','🥖'],[0xE009,'Wheel Coin','Events & Coins','🎡'],[0xE018,'Adventure Coin','Events & Coins','🪙'],[0xE042,'Elysium Coin','Events & Coins','🏅'],[0xE046,'Twinstar Coin','Events & Coins','🌟'],[0xE036,'Coin (unconfirmed)','More Icons','🪙'],[0xE041,'Viking Token (unconfirmed)','More Icons','🪓'],[0xE044,'Alliance Brawl (unconfirmed)','More Icons','🏰']
+    [0xE011,'Pearl of Enigma','Events & Coins','🔮'],[0xE020,'Halloween Candy','Events & Coins','🍬'],[0xE029,'Halloween Lollipop','Events & Coins','🍭'],[0xE021,'Energy Booster','Events & Coins','⚡'],[0xE022,'Hotdog','Events & Coins','🌭'],[0xE034,'Lucky Peach','Events & Coins','🍑'],[0xE040,'Energy Bar','Events & Coins','🥖'],[0xE009,'Wheel Coin','Events & Coins','🎡'],[0xE018,'Adventure Coin','Events & Coins','🪙'],[0xE042,'Elysium Coin','Events & Coins','🏅'],[0xE046,'Twinstar Coin','Events & Coins','🌟'],[0xE043,'Buttery Bones','Events & Coins','🦴'],[0xE048,'Event Dice','Events & Coins','🎲'],[0xE049,'Twinstar Dice','Events & Coins','🎲'],[0xE036,'Coin (unconfirmed)','More Icons','🪙'],[0xE041,'Viking Token (unconfirmed)','More Icons','🪓'],[0xE044,'Alliance Brawl (unconfirmed)','More Icons','🏰']
   ];
   const SYMBOL_SET=[
     [0x2501,'Heavy horizontal line','Symbols & Arrows','━'],
@@ -283,21 +283,31 @@
   const ALL_ICONS=[...EMOJI_SET,...SYMBOL_SET];
   const EMOJI_CATS=['All','Resources','Speedups','Heroes & Gear','Events & Coins','More Icons','Symbols & Arrows','Circled Numbers'];
   function secretEmojiPanel(){
-    return '<section class="secret-emojis ms-simple-picker" aria-label="Kingshot emoji and symbol picker">'+
-      '<p class="ms-picker-hint">Tap an icon to add it to your message.</p>'+
-      '<div id="emojiResults" class="emoji-grid ms-icon-grid" role="group" aria-label="Emoji and symbol choices"></div>'+
-      '<p class="ms-picker-note">Some Kingshot-specific icons may display differently in-game.</p>'+
+    return '<section class="secret-emojis ms-simple-picker" aria-label="Kingshot item and text symbol picker">'+
+      '<p class="ms-picker-hint">Tap any picture to add its character to your message. The name underneath tells you what it represents.</p>'+
+      '<div id="emojiResults" class="emoji-grid ms-icon-grid" role="group" aria-label="Kingshot item icons and text symbols"></div>'+
+      '<p class="ms-picker-note"><strong>Note:</strong> These pictures are visual guides, not exact Kingshot sprites. The game draws its own item icon when supported. This is a community-reported selection, not a confirmed complete official list.</p>'+
     '</section>';
   }
   function refreshEmojis(){
     const out=$('emojiResults');if(!out)return;
-    out.innerHTML=ALL_ICONS.map(([code,name,cat,picture,override])=>{
-      const value=override||String.fromCodePoint(code);
-      const isSymbol=cat==='Symbols & Arrows'||cat==='Circled Numbers';
-      return '<button type="button" class="ms-icon-choice'+(isSymbol?' ms-icon-choice-symbol':'')+
-        '" data-action="emoji-insert" data-insert="'+esc(value)+
-        '" aria-label="Insert '+esc(name)+'" title="'+esc(name)+'">'+esc(picture)+'</button>';
-    }).join('');
+    const groups=[
+      {title:'Kingshot item icons',subtitle:'Game-specific icons · community-reported',items:EMOJI_SET},
+      {title:'Text symbols & markers',subtitle:'Standard arrows, numbers and short labels',items:SYMBOL_SET}
+    ];
+    out.innerHTML=groups.map(group=>
+      '<div class="ms-icon-group"><div class="ms-icon-group-heading"><strong>'+esc(group.title)+
+      '</strong><small>'+group.items.length+' choices · '+esc(group.subtitle)+'</small></div>'+
+      '<div class="ms-icon-group-grid">'+group.items.map(([code,name,cat,picture,override])=>{
+        const value=override||String.fromCodePoint(code);
+        const isSymbol=cat==='Symbols & Arrows'||cat==='Circled Numbers';
+        return '<button type="button" class="ms-icon-choice ms-icon-choice-labelled'+(isSymbol?' ms-icon-choice-symbol':'')+
+          '" data-action="emoji-insert" data-insert="'+esc(value)+
+          '" aria-label="Insert '+esc(name)+'" title="'+esc(name)+'">'+
+          '<span class="ms-icon-picture" aria-hidden="true">'+esc(picture)+'</span>'+
+          '<span class="ms-icon-name">'+esc(name.replace(/ \(unconfirmed\)/g,''))+'</span></button>';
+      }).join('')+'</div></div>'
+    ).join('');
   }
   function insertEmoji(ch){const box=$('messageBody');if(box){const a=box.selectionStart??box.value.length,b=box.selectionEnd??a;box.setRangeText(ch,a,b,'end');box.focus();messageBuffer=box.value;}else{messageBuffer=getMessageText()+ch;toast('Unicode icon inserted into draft.');}updateCounts();}
   function settingsPage(){return `${header('Settings','Keep control of saved profiles and move your information between websites.')}<div class="wide-grid"><section class="content-card"><span class="eyebrow">YOUR DATA</span><h2>Backup & restore</h2><p>Export profiles, message drafts, Viking setups, minister application preferences and appointment notes. You can also import profile backups exported from Floot.</p><div class="data-controls"><button class="button button-primary" data-action="export-data">↓ Export Backup</button><button class="button button-ghost" data-action="import-data">↑ Import Backup</button><input id="backupFile" type="file" accept=".json,application/json"></div></section><section class="content-card"><h2>Storage & privacy</h2><p>Profiles, drafts and tool setups are stored in this browser only. Other players create their own profiles. To migrate from Floot, export a backup on the old site and import it here.</p><p class="muted" style="font-size:12px">A new website has separate browser storage; old Floot profiles cannot appear automatically. Export a backup first.</p></section></div>`;}
