@@ -34,6 +34,17 @@ const heroChoice=(chosen,type='')=>`<option value="">None — No hero</option>`+
 const squadChoice=(squads,chosen)=>squads.map((_,i)=>option(String(i+1),`City Reinforcement ${i+1}`,chosen)).join('');
 const typeFields={inf:'Infantry',cav:'Cavalry',arc:'Archers'};
 let current=null;
+// A focused one-screen-at-a-time command deck, instead of a long copied-style form.
+let activeStep=0;
+let activeSquad=0;
+const STEPS=[
+ {title:'Troops & capacity',short:'Troops',icon:'01',desc:'Know what you can send before planning squads.'},
+ {title:'Home guard',short:'City defence',icon:'02',desc:'Keep your defending heroes safely reserved.'},
+ {title:'Squad builder',short:'Heroes',icon:'03',desc:'Equip one city reinforcement march at a time.'},
+ {title:'Troop distribution',short:'Troop plan',icon:'04',desc:'Choose how to split your available troops.'},
+ {title:'HQ waves',short:'HQ plan',icon:'05',desc:'Set up waves 10 and 20 without double-counting.'},
+ {title:'Your battle plan',short:'Results',icon:'06',desc:'Review every squad, check warnings and copy.'}
+];
 function readData(profileId){
  let obj=INITIAL();
  try {const old=JSON.parse(localStorage.getItem(OLD_STORAGE)||'{}')[profileId];if(old)for(const name of ['base','marches','infantry','cavalry','bison','boost','marshal'])if(typeof old[name]==='string')obj[name]=old[name];}catch(err){}
@@ -209,22 +220,42 @@ function hqPanel(data){const mode=data.hqMode,m=clamp(n(data.marches)||6,1,7);re
  ${mode!=='0'?Array.from({length:mode==='1'?1:2},(_,i)=>`<div class="vk-hq-card"><h3>${mode==='1'?'HQ setup for waves 10 + 20':`Wave ${i===0?10:20} HQ setup`}</h3><label>City squad to recall<select data-vk="hq.${i}.source">${squadChoice(Array.from({length:m}),data.hq[i].source)}</select></label><div class="vk-form-row vk-three">${numberInput(`hq.${i}.inf`,data.hq[i].inf,'Infantry to HQ','Auto from recalled squad')}${numberInput(`hq.${i}.cav`,data.hq[i].cav,'Cavalry to HQ','Auto from recalled squad')}${numberInput(`hq.${i}.arc`,data.hq[i].arc,'Archers to HQ','Auto from recalled squad')}</div><p class="vk-footnote">Leave troop counts blank to use the troops from the recalled city squad automatically.</p><div id="vk-hq-${i}" class="vk-inline-result"></div></div>`).join(''):'<p class="vk-footnote">No HQ wave setup selected. You can still use the city reinforcement planner independently.</p>'}
  </section>`;}
 function resultPanel(){return `<section class="content-card vk-panel">${H('Squad overview & checks','Your calculated troops, hero selections, capacity usage and checks in one place.')}<div id="vk-overview"></div><div class="vk-overview-actions"><button class="button button-primary" type="button" data-vka="copy">▣ Copy squad plan</button><button class="button button-outline" type="button" data-vka="reset">↻ Reset Viking setup</button></div></section>`;}
-function renderForm(){const data=current.data,m=clamp(n(data.marches)||6,1,7),root=current.root;
- root.innerHTML=`<div class="vk-root">
-  ${capacityPanel(data)}
-  ${inventoryPanel(data)}
-  ${heroPanel(data)}
-  <section class="content-card vk-panel">${H('City Reinforcement Squad Heroes','Choose your heroes and their levels for each city reinforcement march. Heroes reserved for your own city stay locked.')}<div class="vk-squads">${Array.from({length:m},(_,i)=>squadInputs(data,i)).join('')}</div></section>
-  ${allocationPanel(data)}
-  ${hqPanel(data)}
-  ${resultPanel()}
-  <p class="vk-data-sources">Data sources: Kingshot Hero Level Chart (ks.h5joy-games.com), Kingshot hero roster (kingshotapp.com), Viking Vengeance community guides. Hero deployment estimates and HQ assignments are planning aids; always confirm final limits in-game.</p>
+function squadSelectPanel(data){
+ const m=clamp(n(data.marches)||6,1,7);
+ activeSquad=clamp(activeSquad,0,m-1);
+ return `<section class="content-card vk-panel">${H('Build your reinforcement squads','Pick a march below. Each squad has its own heroes, levels, destination and optional exact-capacity override.')}
+ <div class="vk-squad-select" aria-label="Choose city reinforcement squad">${Array.from({length:m},(_,i)=>`<button type="button" data-vka="squad" data-id="${i}" aria-pressed="${activeSquad===i}" class="vk-squad-pill ${activeSquad===i?'is-current':''}"><span>Squad ${i+1}</span><small>${selectedHeroNames(data.squads[i]).length} / ${n(data.squads[i].slots)} heroes</small></button>`).join('')}</div>
+ <div class="vk-editor-caption"><span class="vk-step-dot">${String(activeSquad+1).padStart(2,'0')}</span><div><strong>Editing city squad ${activeSquad+1}</strong><small>Choose up to three heroes, with different troop types</small></div></div>
+ <div class="vk-squads vk-solo-squad">${squadInputs(data,activeSquad)}</div>
+ <div class="vk-editor-footer"><span>${m} city marches available</span>${activeSquad<m-1?`<button type="button" data-vka="squad" data-id="${activeSquad+1}" class="vk-quiet-btn">Edit squad ${activeSquad+2} →</button>`:'<span>Last squad</span>'}</div></section>`;
+}
+function dashboardStrip(){return `<div class="vk-command-header"><div class="vk-command-text"><span class="vk-eyebrow">VIKING VENGEANCE / SQUAD CONTROL</span><h2>Command Deck</h2><p>Build your defence plan one decision at a time. Your choices save automatically to this browser.</p></div><span class="vk-command-seal" aria-hidden="true">♜</span></div>
+ <div class="vk-command-metrics" aria-label="Live Viking planning summary"><div><span>Troops available</span><strong id="vk-live-troops">—</strong></div><div><span>Troops deployed</span><strong id="vk-live-deployed">—</strong></div><div><span>Not assigned</span><strong id="vk-live-left">—</strong></div></div>`;}
+function renderForm(){const data=current.data,root=current.root;
+ activeStep=clamp(activeStep,0,STEPS.length-1);
+ const currentStep=STEPS[activeStep];
+ const content=[
+  ()=>capacityPanel(data)+inventoryPanel(data),
+  ()=>heroPanel(data),
+  ()=>squadSelectPanel(data),
+  ()=>allocationPanel(data),
+  ()=>hqPanel(data),
+  ()=>resultPanel()
+ ][activeStep]();
+ root.innerHTML=`<div class="vk-root vk-workspace">
+ ${dashboardStrip()}
+ <div class="vk-stepper" aria-label="Viking planner steps">${STEPS.map((step,i)=>`<button type="button" data-vka="step" data-id="${i}" class="vk-step ${i===activeStep?'vk-step-active':''} ${i<activeStep?'vk-step-past':''}" aria-current="${i===activeStep?'step':'false'}"><span class="vk-step-number">${i<activeStep?'✓':step.icon}</span><span class="vk-step-label">${step.short}</span></button>`).join('')}</div>
+ <div class="vk-active-step-heading"><div><span>STEP ${String(activeStep+1).padStart(2,'0')} OF ${String(STEPS.length).padStart(2,'0')}</span><h2>${currentStep.title}</h2><p>${currentStep.desc}</p></div><div class="vk-step-progress"><span style="width:${Math.round((activeStep+1)/STEPS.length*100)}%"></span></div></div>
+ <div class="vk-stage-body">${content}</div>
+ <div class="vk-bottom-navigation"><div>${activeStep>0?'<button type="button" data-vka="prev" class="vk-back-btn">← Previous</button>':'<span class="vk-autosave">✓ Saves as you go</span>'}</div><button type="button" data-vka="next" class="vk-next-btn">${activeStep===STEPS.length-1?'Back to troops ↻':activeStep===STEPS.length-2?'Review full plan →':'Continue →'}</button></div>
+ <p class="vk-data-sources">Kingshot planning estimates based on community hero-level and troop data. Exact march capacity overrides take precedence. Check hero bonuses and final troop limits in your game before deploying.</p>
  </div>`;
  refresh();
 }
 function updateText(id,text){const el=current.root.querySelector('#'+id);if(el)el.textContent=text;}
 function refresh(){if(!current)return;const d=current.data,x=compute(d);
  const bf=n(d.bison)*1500,percent=n(d.boost),marshal=d.marshal==='on'?2500:0;
+ updateText('vk-live-troops',f(x.wanted));updateText('vk-live-deployed',f(x.deployed));updateText('vk-live-left',f(Math.max(0,x.wanted-x.deployed)));
  const caps=current.root.querySelector('#vk-cap-summary');if(caps)caps.innerHTML=`
   <div><small>Without buffs</small><strong>${f(x.normalCapacity)}</strong></div><div><small>With selected buffs</small><strong>${f(x.configuredCapacity)}</strong></div><div><small>Pet bonus / march</small><strong>${bf?'+'+f(bf):'None'}</strong></div><div><small>Deployment boost</small><strong>${percent?percent+'%':'None'}</strong></div><div><small>Marshal bonus / march</small><strong>${marshal?'+'+f(marshal):'None'}</strong></div><div><small>Extra space needed</small><strong>${f(x.basicNeed)}</strong></div>`;
  for(let i=0;i<x.marches;i++){
@@ -262,11 +293,16 @@ function planText(){const x=compute(current.data);const text=['VIKING VENGEANCE 
  return text.join('\n');
 }
 function click(e){const btn=e.target.closest('[data-vka]');if(!btn||!current?.root.contains(btn))return;
+ if(btn.dataset.vka==='step'){activeStep=clamp(n(btn.dataset.id),0,STEPS.length-1);renderForm();return;}
+ if(btn.dataset.vka==='next'){activeStep=activeStep===STEPS.length-1?0:activeStep+1;renderForm();return;}
+ if(btn.dataset.vka==='prev'){activeStep=Math.max(0,activeStep-1);renderForm();return;}
+ if(btn.dataset.vka==='squad'){activeSquad=clamp(n(btn.dataset.id),0,6);renderForm();return;}
  if(btn.dataset.vka==='reset'&&confirm('Reset your Viking squad planner settings for this profile?')){current.data=INITIAL();save();renderForm();}
  if(btn.dataset.vka==='copy'){const str=planText();navigator.clipboard?.writeText(str).then(()=>{btn.textContent='✓ Copied';setTimeout(()=>{if(btn.isConnected)btn.textContent='▣ Copy squad plan';},1300)}).catch(()=>{window.prompt('Copy your plan',str)});}
 }
 function mount(root,profileId){if(!root)return;
  if(current?.root&&current.root!==root){current.root.removeEventListener('input',listener);current.root.removeEventListener('change',listener);current.root.removeEventListener('click',click);}
+ activeStep=0;activeSquad=0;
  current={root,id:profileId||'guest',data:readData(profileId||'guest')};
  root.addEventListener('input',listener);root.addEventListener('change',listener);root.addEventListener('click',click);
  renderForm();
