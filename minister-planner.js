@@ -24,7 +24,7 @@ const TIMEZONES=[
  ['Australia (Sydney)','Australia/Sydney'],
  ['South Africa (Johannesburg)','Africa/Johannesburg']
 ];
-const defaults=()=>({office:'Chief Minister',zone:detectZone(),mode:'slot',basis:'next',earliest:'',lead:'5',fixedDate:'',fixedTime:''});
+const defaults=()=>({office:'Chief Minister',zone:detectZone(),mode:'slot',basis:'next',activity:'general',earliest:'',lead:'5',fixedDate:'',fixedTime:'',trainHours:'',trainMinutes:'',trainSeconds:'',trainBuffer:'0',trainCapturedAt:''});
 const q=(x)=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const opt=(value,label,selected)=>'<option value="'+q(value)+'"'+(String(value)===String(selected)?' selected':'')+'>'+q(label)+'</option>';
 function detectZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){return 'UTC';}}
@@ -35,7 +35,9 @@ function read(profileId){
   try{new Intl.DateTimeFormat('en-GB',{timeZone:next.zone});}catch(e){next.zone=def.zone;}
   if(!OFFICES.includes(next.office))next.office=def.office;
   if(!['queue','slot'].includes(next.mode))next.mode='slot';
-  if(!['next','fixed'].includes(next.basis))next.basis='next';
+  if(!['next','fixed','training'].includes(next.basis))next.basis='next';
+  if(!['general','training'].includes(next.activity))next.activity='general';
+  if(next.activity==='training')next.basis='training';
   return next;
  }catch(e){return def;}
 }
@@ -59,8 +61,31 @@ function calculate(data,now=Date.now()){
  const leadMs=lead*60000;
  let zone=data.zone;
  try{new Intl.DateTimeFormat('en-GB',{timeZone:zone});}catch(e){zone='UTC';}
- let start,warning='',choices=[];
- if(data.basis==='fixed'){
+ let start,warning='',choices=[],trainingEnd=null;
+ if(data.activity==='training'||data.basis==='training'){
+   const hours=Number(data.trainHours||0),mins=Number(data.trainMinutes||0),secs=Number(data.trainSeconds||0);
+   if(![hours,mins,secs].every(Number.isInteger)||hours<0||hours>999||mins<0||mins>59||secs<0||secs>59)return{error:'Enter a valid remaining training time (hours, minutes and seconds).'};
+   const remaining=(hours*3600+mins*60+secs)*1000;
+   if(remaining<=0)return{error:'Enter how long is left on your current troop training, as shown in Kingshot.'};
+   const captured=Number(data.trainCapturedAt);
+   const measuredAt=Number.isFinite(captured)&&captured>0?captured:now;
+   trainingEnd=measuredAt+remaining;
+   if(trainingEnd<=now)return{error:'Your previously entered training timer has finished. Enter the current training time remaining to recalculate.'};
+   const buffer=[0,5,10,15,30].includes(Number(data.trainBuffer))?Number(data.trainBuffer):0;
+   const afterTraining=trainingEnd+buffer*60000;
+   const minimum=Math.max(now+leadMs+1,afterTraining);
+   if(data.mode==='queue'){
+      start=minimum;
+      choices=[start];
+      warning='Queue appointments are not guaranteed. This is the time to check or request the next opening after your current training is finished.';
+   }else{
+      const interval=30*60000;
+      start=Math.ceil(minimum/interval)*interval;
+      choices=Array.from({length:3},(_,i)=>start+i*interval);
+   }
+   if(start-leadMs<trainingEnd)warning+=' The suggested check time is before your current training finishes; this is intentional so you can be ready for the next batch.';
+   warning+=' Minister training bonuses apply when you start a new batch. They do not retroactively change the current training countdown.';
+ }else if(data.basis==='fixed'){
   if(!/^\d{4}-\d\d-\d\d$/.test(data.fixedDate||'')||!/^\d\d:\d\d$/.test(data.fixedTime||''))return{error:'Enter the UTC appointment date and time to calculate your local application time.'};
   start=Date.parse(data.fixedDate+'T'+data.fixedTime+':00Z');
   if(!Number.isFinite(start))return{error:'That UTC date and time is invalid.'};
@@ -79,7 +104,7 @@ function calculate(data,now=Date.now()){
   start=choices[0];
  }
  const application=start-leadMs;
- return{start,application,zone,lead,warning,choices,untilStart:humanGap(start-now),untilApply:application>now?humanGap(application-now):'Now / already due'};
+ return{start,application,trainingEnd,zone,lead,warning,choices,untilStart:humanGap(start-now),untilApply:application>now?humanGap(application-now):'Now / already due'};
 }
 let current=null;
 function resultHTML(data,plan){
