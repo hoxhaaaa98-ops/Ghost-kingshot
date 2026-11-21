@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071b16">
+  <meta name="description" content="Kingshot Tools — Bear Trap, Viking Vengeance, KvK planning, UTC converter and alliance message creator.">
+  <title>Ghost's Kingshot Tools | Community Toolkit</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="site-shell">
+    <div id="scrim" class="scrim" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a href="#dashboard" class="brand brand-side" data-link aria-label="Kingshot Tools dashboard">
+        <span class="brand-crown">♛</span>
+        <span class="brand-title">KINGSHOT</span><span class="brand-pill">TOOLS</span>
+      </a>
+      <nav class="sidebar-nav" id="sideNav">
+        <span class="nav-caption">MAIN MENU</span>
+        <a href="#dashboard" data-link data-nav="dashboard"><span class="nav-icon">⌂</span>Dashboard</a>
+        <a href="#profile" data-link data-nav="profile"><span class="nav-icon">♟</span>Player Profile</a>
+        <span class="nav-caption nav-gap">CALCULATORS & PLANNERS</span>
+        <a href="#bt-lead" data-link data-nav="bt-lead"><span class="nav-icon">♟</span>BT Lead Rally Ratio</a>
+        <a href="#bt-joiner" data-link data-nav="bt-joiner"><span class="nav-icon">⚔</span>BT Joiner Squad</a>
+        <a href="#viking" data-link data-nav="viking"><span class="nav-icon">🛡</span>Viking Vengeance</a>
+        <a href="#kvk" data-link data-nav="kvk"><span class="nav-icon">♛</span>KvK Planner</a>
+        <a href="#utc" data-link data-nav="utc"><span class="nav-icon">◷</span>UTC Converter</a>
+        <a href="#message" data-link data-nav="message"><span class="nav-icon">▤</span>Message Creator</a>
+        <span class="sidebar-divider"></span>
+        <a href="#settings" data-link data-nav="settings"><span class="nav-icon">⚙</span>Settings</a>
+        <a href="#help" data-link data-nav="help"><span class="nav-icon">?</span>Help & FAQ</a>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot"></span> BUILT FOR KINGSHOT PLAYERS <small>Community toolkit · Version 1.0</small></div>
+    </aside>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="topbar-start"><button id="menuButton" class="menu-button" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">☰</button><a class="top-brand" href="#dashboard" data-link><span class="top-brand-crown">♛</span> Kingshot Tools</a></div>
+        <div class="topbar-actions">
+          <div class="profile-menu-wrap"><button class="profile-switch" type="button" id="profileSwitch" aria-haspopup="true" aria-expanded="false">♧ <span class="profile-switch-name">My Profiles</span> <span aria-hidden="true">⌄</span></button><div class="profile-dropdown" id="profileDropdown" hidden></div></div>
+          <span class="top-separator"></span><button class="avatar-mini" type="button" id="headerAvatar" aria-label="Create or edit player profile">♛</button>
+        </div>
+      </header>
+      <main id="appMain" tabindex="-1"></main>
+      <footer class="site-footer"><span>♛ KINGSHOT TOOLS</span><span>Independent fan-made planning toolkit · Not affiliated with Kingshot</span></footer>
+    </div>
+  </div>
+  <dialog id="profileDialog" class="profile-dialog">
+    <form method="dialog" id="profileForm" novalidate>
+      <div class="dialog-heading"><div><span class="eyebrow">PLAYER MANAGEMENT</span><h2 id="dialogTitle">Edit Profile</h2></div><button type="button" class="close-dialog" id="closeProfile" aria-label="Close">✕</button></div>
+      <div class="dialog-fields">
+        <label>Player name <input type="text" maxlength="32" id="pfName" placeholder="Your in-game player name" required></label>
+        <div class="two-fields"><label>Kingdom <input type="text" maxlength="12" id="pfKingdom" placeholder="e.g. 2624"></label><label>Alliance <input type="text" maxlength="20" id="pfAlliance" placeholder="e.g. KNG"></label></div>
+        <div class="two-fields"><label>Power <input type="number" min="0" step="1" id="pfPower" placeholder="Player power"></label><label>Town Center level <input type="number" min="1" max="99" step="1" id="pfLevel" placeholder="e.g. 30"></label></div>
+        <label>Profile picture <input type="file" accept="image/jpeg,image/png,image/webp" id="pfAvatar"></label>
+        <small>Pictures are resized and stored on this device with your profile.</small>
+      </div>
+      <div class="dialog-actions"><button class="button button-ghost" type="button" id="cancelProfile">Cancel</button><button class="button button-primary" type="submit">Save Profile <span aria-hidden="true">→</span></button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
