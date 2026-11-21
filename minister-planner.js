@@ -179,7 +179,8 @@ function onClick(event){
  if(btn.dataset.mpAction==='copy'){
   const p=calculate(current.data);if(p.error)return;
   const local=p.zone,role=current.data.office;
-  const text='KINGSHOT MINISTER PLANNER\nRole: '+role+'\n'+(current.data.mode==='queue'?'Suggested queue check':'Planned appointment')+'\nLocal: '+dateLabel(p.start,local)+'\nUTC: '+dateLabel(p.start,'UTC')+'\nApply / check '+p.lead+' min early\nLocal: '+dateLabel(p.application,local)+'\nUTC: '+dateLabel(p.application,'UTC')+'\nCheck in-game availability; this is a planning estimate.';
+  const training=p.trainingEnd?'Current troop training ends\nLocal: '+dateLabel(p.trainingEnd,local)+'\nUTC: '+dateLabel(p.trainingEnd,'UTC')+'\n':'';
+  const text='KINGSHOT MINISTER PLANNER\nRole: '+role+'\n'+training+(current.data.mode==='queue'?'Suggested queue check':'Planned appointment')+'\nLocal: '+dateLabel(p.start,local)+'\nUTC: '+dateLabel(p.start,'UTC')+'\nApply / check '+p.lead+' min early\nLocal: '+dateLabel(p.application,local)+'\nUTC: '+dateLabel(p.application,'UTC')+'\nCheck in-game availability; this is a planning estimate.';
   if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{btn.textContent='✓ Copied schedule';}).catch(()=>window.prompt('Copy your minister times',text));
   else window.prompt('Copy your minister times',text);
  }
