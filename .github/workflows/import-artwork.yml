@@ -1,0 +1,45 @@
+name: Import Kingshot artwork into this repository
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/import-artwork.yml
+permissions:
+  contents: write
+jobs:
+  import-art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artwork from our original hosted project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/e4fdee0b-dd15-430e-99a6-f2dd983151ea-bear-lead.webp" -o assets/bear-lead.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/a06b9d67-902c-4da4-a65e-3ba1070139c3-bear-joiner.webp" -o assets/bear-joiner.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/22c5c7d4-08f1-45e8-a0d1-79cf262305d2-viking.webp" -o assets/viking.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/2230bde0-97b7-40cc-88bb-8e2421753f9f-kvk.webp" -o assets/kvk.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/c3e3e38b-9def-48a3-9b90-a096649837f7-utc.webp" -o assets/utc.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/a6dff215-708e-4a08-9a8b-18ed889a8a9e-messages.webp" -o assets/messages.webp
+          curl --fail --location --retry 3 --silent --show-error "https://ghosts-kingshot-tools.floot.app/_cdn/static/18c18b88-e383-446a-bbf1-caf659883770-bear-mark.png" -o assets/bear-mark.png
+          echo "6b2da83c3de6eabd93c35a64be1f7f7ba255f52e49230cb31d6c8bce0463b24c  assets/bear-lead.webp" | sha256sum --check
+          echo "dea76ab019758389f87d5e4771ea9fd0b89f6f4d7f0ae89e15c023024c126a68  assets/bear-joiner.webp" | sha256sum --check
+          echo "c0f71fc5b43381a860cfddf280f9eaa6f96db2cb627f0be70a7c4627413187d4  assets/viking.webp" | sha256sum --check
+          echo "bf2382b5afc631ff9b106b08ea939be383884c8f616ea95b188bdce98ccf7d1e  assets/kvk.webp" | sha256sum --check
+          echo "23c4f617696d27d79dd8bbc09011f7703bf414f6ad6294fd54965ab777684230  assets/utc.webp" | sha256sum --check
+          echo "abb21dc3b55aa005f3f587e9b04466c57b591ac48c2a36162a0fe4caf3753a8e  assets/messages.webp" | sha256sum --check
+          echo "224c7685b8947a4eff4858142f75e9237939400dfe1469a732e5722656a23108  assets/bear-mark.png" | sha256sum --check
+      - name: Commit the images to GitHub
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain -- assets)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets
+            git commit -m "Import all game artwork into independent website"
+            git push
+          else
+            echo "Images already in the repository."
+          fi
